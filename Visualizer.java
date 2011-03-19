@@ -27,7 +27,9 @@ import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 
 import org.jbox2d.common.Vec2;
+import org.jbox2d.collision.AABB;
 import org.jbox2d.dynamics.DebugDraw;
+import org.jbox2d.dynamics.World;
 
 import processing.core.PApplet;
 
@@ -58,6 +60,9 @@ public class Visualizer extends PApplet {
     
     /** Drawing handler to use. */
     public DebugDraw g;
+
+
+    public World world;
 
     /** Constructor - real initialization happens in setup() function */
     public Visualizer() {
@@ -91,8 +96,16 @@ public class Visualizer extends PApplet {
     		nanos[i] = nanos[i+1] - nanosPerFrameGuess;
     	}
     	nanoStart = System.nanoTime();
-    	
 
+
+        AABB worldAABB = new AABB();
+        worldAABB.lowerBound = new Vec2(-200.0f, -100.0f);
+        worldAABB.upperBound = new Vec2(200.0f, 200.0f);
+        Vec2 gravity = new Vec2(0.0f, 0.0f);
+        boolean doSleep = true;
+        world = new World(worldAABB, gravity, doSleep);
+        world.setDebugDraw(g);
+    	
     }
     
     /**
@@ -103,6 +116,8 @@ public class Visualizer extends PApplet {
      * purposes.
      */
     public void draw() {
+        
+        world.step(1.0f / targetFPS, 8);
         return;
     }
     
@@ -127,7 +142,7 @@ public class Visualizer extends PApplet {
 
     /** Start PApplet as a Java program (can also be run as an applet). */
     static public void main(String args[]) {
-        PApplet.main(new String[] { "hello world" });
+        PApplet.main(new String[] { "Visualizer" });
     }
 
 }

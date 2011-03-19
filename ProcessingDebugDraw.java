@@ -39,13 +39,13 @@ import processing.core.PImage;
  * @author ewjordan
  */
 public class ProcessingDebugDraw extends DebugDraw {
-	public static ProcessingDebugDraw screen; //static rendering context for debug drawing from within other code
+    public static ProcessingDebugDraw screen; //static rendering context for debug drawing from within other code
 
-	private boolean firstTime = true;
-	public PApplet g;
-	public PFont m_font;
-	public float fontHeight;
-	// World 0,0 maps to transX, transY on screen
+    private boolean firstTime = true;
+    public PApplet g;
+    public PFont m_font;
+    public float fontHeight;
+    // World 0,0 maps to transX, transY on screen
     public float transX = 320.0f;
     public float transY = 240.0f;
     public float scaleFactor = 20.0f;
@@ -57,106 +57,106 @@ public class ProcessingDebugDraw extends DebugDraw {
     	scaleFactor = scale;
     }
 	
-	public ProcessingDebugDraw(PApplet pApplet) {
-		screen = this;
-		g = pApplet;
-		m_font = g.createFont("LucidaGrande-Bold",12);//-Bold-14.vlw");
-		fontHeight = 14.0f;
-	}
+    public ProcessingDebugDraw(PApplet pApplet) {
+        screen = this;
+        g = pApplet;
+        m_font = g.createFont("LucidaGrande-Bold",12);//-Bold-14.vlw");
+        fontHeight = 14.0f;
+    }
 	
-	public Vec2 worldToScreen(Vec2 world) {
-		float x = PApplet.map(world.x, 0f, 1f, transX, transX+scaleFactor);
-		float y = PApplet.map(world.y, 0f, 1f, transY, transY+scaleFactor);
-		if (yFlip == -1.0f) y = PApplet.map(y,0f,g.height, g.height,0f);
-		return new Vec2(x, y);
-	}
-	public Vec2 worldToScreen(float x, float y) {
-		return worldToScreen(new Vec2(x,y));
-	}
-	
-	public Vec2 screenToWorld(Vec2 screen) {
-		float x = PApplet.map(screen.x, transX, transX+scaleFactor, 0f, 1f);
-		float y = screen.y;
-		if (yFlip == -1.0f) y = PApplet.map(y,g.height,0f,0f,g.height);
-		y = PApplet.map(y, transY, transY+scaleFactor, 0f, 1f);
-		return new Vec2(x,y);
-	}
-	public Vec2 screenToWorld(float x, float y) {
-		return screenToWorld(new Vec2(x,y));
-	}
+    public Vec2 worldToScreen(Vec2 world) {
+        float x = PApplet.map(world.x, 0f, 1f, transX, transX+scaleFactor);
+        float y = PApplet.map(world.y, 0f, 1f, transY, transY+scaleFactor);
+        if (yFlip == -1.0f) y = PApplet.map(y,0f,g.height, g.height,0f);
+        return new Vec2(x, y);
+    }
+    public Vec2 worldToScreen(float x, float y) {
+        return worldToScreen(new Vec2(x,y));
+    }
+    
+    public Vec2 screenToWorld(Vec2 screen) {
+        float x = PApplet.map(screen.x, transX, transX+scaleFactor, 0f, 1f);
+        float y = screen.y;
+        if (yFlip == -1.0f) y = PApplet.map(y,g.height,0f,0f,g.height);
+        y = PApplet.map(y, transY, transY+scaleFactor, 0f, 1f);
+        return new Vec2(x,y);
+    }
+    public Vec2 screenToWorld(float x, float y) {
+        return screenToWorld(new Vec2(x,y));
+    }
 
-	/* (non-Javadoc)
-	 * @see org.jbox2d.dynamics.DebugDraw#drawCircle(org.jbox2d.common.Vec2, float, javax.vecmath.Color3f)
-	 */
-	@Override
+    /* (non-Javadoc)
+     * @see org.jbox2d.dynamics.DebugDraw#drawCircle(org.jbox2d.common.Vec2, float, javax.vecmath.Color3f)
+     */
+    @Override
 	public void drawCircle(Vec2 center, float radius, Color3f color) {
-		center = worldToScreen(center);
-		radius *= scaleFactor;
-		g.noFill();
-		float k_segments = 16.0f;
-		float k_increment = 2.0f * (float)Math.PI / k_segments;
-		float theta = 0.0f;
-		g.stroke(color.x, color.y, color.z);
-		g.noFill();
-		g.beginShape(PApplet.POLYGON);
-		for (int i = 0; i < k_segments; ++i) {
-			float vx = center.x + radius * (float)Math.cos(theta);
-			float vy = center.y + radius * (float)Math.sin(theta);
-			g.vertex(vx, vy);
-			theta += k_increment;
-		}
-		g.vertex(center.x + radius, center.y);
-		g.endShape();
-	}
+        center = worldToScreen(center);
+        radius *= scaleFactor;
+        g.noFill();
+        float k_segments = 16.0f;
+        float k_increment = 2.0f * (float)Math.PI / k_segments;
+        float theta = 0.0f;
+        g.stroke(color.x, color.y, color.z);
+        g.noFill();
+        g.beginShape(PApplet.POLYGON);
+        for (int i = 0; i < k_segments; ++i) {
+            float vx = center.x + radius * (float)Math.cos(theta);
+            float vy = center.y + radius * (float)Math.sin(theta);
+            g.vertex(vx, vy);
+            theta += k_increment;
+        }
+        g.vertex(center.x + radius, center.y);
+        g.endShape();
+    }
 
 	
-	/* (non-Javadoc)
-	 * @see org.jbox2d.dynamics.DebugDraw#drawSolidCircle(org.jbox2d.common.Vec2, float, org.jbox2d.common.Vec2, javax.vecmath.Color3f)
-	 */
-	@Override
+    /* (non-Javadoc)
+     * @see org.jbox2d.dynamics.DebugDraw#drawSolidCircle(org.jbox2d.common.Vec2, float, org.jbox2d.common.Vec2, javax.vecmath.Color3f)
+     */
+    @Override
 	public void drawSolidCircle(Vec2 center, float radius, Vec2 axis,
-			Color3f color) {
-		center = worldToScreen(center);
-		radius = radius * scaleFactor;
-		axis = new Vec2(axis.x, axis.y*yFlip);
-		
-		float k_segments = 16.0f;
-		float k_increment = 2.0f * (float)Math.PI / k_segments;
-		float theta = 0.0f;
-		g.fill(0.5f*color.x, 0.5f*color.y, 0.5f*color.z, 0.5f*255.0f);
-		g.stroke(color.x,color.y,color.z, 255.0f);
-		g.beginShape(PApplet.POLYGON);
-		for (int i = 0; i < k_segments; ++i) {
-			float vx = center.x + radius * (float)Math.cos(theta);
-			float vy = center.y + radius * (float)Math.sin(theta);
-			g.vertex(vx, vy);
-			theta += k_increment;
-		}
-		g.vertex(center.x+radius, center.y);
-		g.endShape();
-
-		Vec2 p = new Vec2(center.x + radius * axis.x, center.y + radius * axis.y);
-		g.beginShape(PApplet.LINES);
-		g.vertex(center.x, center.y);
-		g.vertex(p.x, p.y);
-		g.endShape();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jbox2d.dynamics.DebugDraw#drawPolygon(org.jbox2d.common.Vec2[], int, javax.vecmath.Color3f)
-	 */
-	@Override
+                                    Color3f color) {
+        center = worldToScreen(center);
+        radius = radius * scaleFactor;
+        axis = new Vec2(axis.x, axis.y*yFlip);
+        
+        float k_segments = 16.0f;
+        float k_increment = 2.0f * (float)Math.PI / k_segments;
+        float theta = 0.0f;
+        g.fill(0.5f*color.x, 0.5f*color.y, 0.5f*color.z, 0.5f*255.0f);
+        g.stroke(color.x,color.y,color.z, 255.0f);
+        g.beginShape(PApplet.POLYGON);
+        for (int i = 0; i < k_segments; ++i) {
+            float vx = center.x + radius * (float)Math.cos(theta);
+            float vy = center.y + radius * (float)Math.sin(theta);
+            g.vertex(vx, vy);
+            theta += k_increment;
+        }
+        g.vertex(center.x+radius, center.y);
+        g.endShape();
+        
+        Vec2 p = new Vec2(center.x + radius * axis.x, center.y + radius * axis.y);
+        g.beginShape(PApplet.LINES);
+        g.vertex(center.x, center.y);
+        g.vertex(p.x, p.y);
+        g.endShape();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.jbox2d.dynamics.DebugDraw#drawPolygon(org.jbox2d.common.Vec2[], int, javax.vecmath.Color3f)
+     */
+    @Override
 	public void drawPolygon(Vec2[] vertices, int vertexCount, Color3f color) {
-		g.stroke(color.x, color.y, color.z);
-		g.noFill();
-		for (int i = 0; i < vertexCount; ++i) {
-			int ind = (i+1<vertexCount)?i+1:(i+1-vertexCount);
-			Vec2 v1 = worldToScreen(vertices[i]);
-			Vec2 v2 = worldToScreen(vertices[ind]);
-			g.line(v1.x, v1.y, v2.x, v2.y);
-		}
-
-	}
+        g.stroke(color.x, color.y, color.z);
+        g.noFill();
+        for (int i = 0; i < vertexCount; ++i) {
+            int ind = (i+1<vertexCount)?i+1:(i+1-vertexCount);
+            Vec2 v1 = worldToScreen(vertices[i]);
+            Vec2 v2 = worldToScreen(vertices[ind]);
+            g.line(v1.x, v1.y, v2.x, v2.y);
+        }
+        
+    }
 	
 	/* (non-Javadoc)
 	 * @see org.jbox2d.dynamics.DebugDraw#drawSolidPolygon(org.jbox2d.common.Vec2[], int, javax.vecmath.Color3f)
