@@ -26,8 +26,12 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 
+import org.jbox2d.common.Color3f;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.collision.AABB;
+import org.jbox2d.collision.PolygonDef;
+import org.jbox2d.dynamics.Body;
+import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.DebugDraw;
 import org.jbox2d.dynamics.World;
 
@@ -84,6 +88,7 @@ public class Visualizer extends PApplet {
     	frameRate(targetFPS);
     	g = new ProcessingDebugDraw(this);
     	//smooth();
+        // what is this?
     	for (int i=0; i<100; ++i) {
     		this.requestFocus();
     	}
@@ -106,6 +111,24 @@ public class Visualizer extends PApplet {
         world = new World(worldAABB, gravity, doSleep);
         world.setDebugDraw(g);
     	
+        g.appendFlags(DebugDraw.e_shapeBit);
+
+        // add some stuff to the world.
+
+        PolygonDef sd = new PolygonDef();
+        float a = 0.5f;
+        sd.setAsBox(a, a);
+        sd.density = 5.0f;
+        sd.restitution = 0.0f;
+        sd.friction = 0.5f;
+
+        BodyDef bd = new BodyDef();
+        bd.position.set(new Vec2(0.0f,0.0f));
+        Body body = world.createBody(bd);
+        body.createShape(sd);
+        body.setMassFromShapes();
+        
+                                        
     }
     
     /**
@@ -116,8 +139,9 @@ public class Visualizer extends PApplet {
      * purposes.
      */
     public void draw() {
-        
+        background(0);
         world.step(1.0f / targetFPS, 8);
+        g.drawString(5, 30, "Average FPS ("+fpsAverageCount+" frames)", new Color3f(255.0f,255.0f,255.0f));
         return;
     }
     
