@@ -1,3 +1,3 @@
 #!/bin/sh
 
-java -cp core.jar:jbox2d.jar:. Visualizer
+scala -cp core.jar:jbox2d.jar:.  -howtorun:object Main

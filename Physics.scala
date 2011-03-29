@@ -54,10 +54,10 @@ class Physics extends PApplet {
     val fpsAverageCount = 100
     
     /** Drawing handler to use. */
-    var g: DebugDraw
+    var dd: DebugDraw = null
 
 
-    var world: World
+    var world: World = null
 
     /** Constructor - real initialization happens in setup() function 
     def Physics() {
@@ -79,7 +79,7 @@ class Physics extends PApplet {
     	 */
     	size(640,480,P3D)
     	frameRate(targetFPS)
-    	g = new ProcessingDebugDraw(this)
+    	dd = new ProcessingDebugDraw(this)
     	//smooth();
         // what is this?
         this.requestFocus()
@@ -91,9 +91,9 @@ class Physics extends PApplet {
         val gravity:Vec2 = new Vec2(0.0f, 0.0f)
         val doSleep = true
         world = new World(worldAABB, gravity, doSleep)
-        world.setDebugDraw(g)
+        world.setDebugDraw(dd)
     	
-        g.appendFlags(DebugDraw.e_shapeBit);
+        dd.appendFlags(DebugDraw.e_shapeBit);
 
         // add some stuff to the world.
 
@@ -123,7 +123,7 @@ class Physics extends PApplet {
     override def draw() {
         background(0)
         world.step(1.0f / targetFPS, 8)
-        g.drawString(5, 30, "Average FPS ("+fpsAverageCount+" frames)", new Color3f(255.0f,255.0f,255.0f))
+        dd.drawString(5, 30, "Average FPS ("+fpsAverageCount+" frames)", new Color3f(255.0f,255.0f,255.0f))
         return
     }
     
