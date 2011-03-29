@@ -109,21 +109,22 @@ class Physics extends PApplet {
         val body: Body = world.createBody(bd)
         body.createShape(sd)
         body.setMassFromShapes()
+        body.setLinearVelocity(new Vec2(0.0f, 1.0f))
+
+        body.setAngularVelocity( 0.2f)
         
                                         
     }
     
     /**
      * This is the main looping function, and is called targetFPS times per second.
-     * In the testbed, Processing takes care of the timing of these calls for us,
-     * but in your own game you will likely need to handle that yourself.  This function
-     * also keeps detailed track of the current FPS and Vec2 creations for optimization
-     * purposes.
      */
     override def draw() {
+
+
+        // draw it and step.
         background(0)
         world.step(1.0f / targetFPS, 8)
-        dd.drawString(5, 30, "Average FPS ("+fpsAverageCount+" frames)", new Color3f(255.0f,255.0f,255.0f))
         return
     }
     
