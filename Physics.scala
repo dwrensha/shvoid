@@ -1,25 +1,3 @@
-/*
- * JBox2D - A Java Port of Erin Catto's Box2D
- * 
- * JBox2D homepage: http://jbox2d.sourceforge.net/ 
- * Box2D homepage: http://www.box2d.org
- * 
- * This software is provided 'as-is', without any express or implied
- * warranty.  In no event will the authors be held liable for any damages
- * arising from the use of this software.
- * 
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- * 
- * 1. The origin of this software must not be misrepresented; you must not
- * claim that you wrote the original software. If you use this software
- * in a product, an acknowledgment in the product documentation would be
- * appreciated but is not required.
- * 2. Altered source versions must be plainly marked as such, and must not be
- * misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
- */
 
 
 
@@ -45,43 +23,22 @@ class Physics extends PApplet {
     var pmousePressed = false
     
     
-    // Processing handles fps pinning, but we
-    // report fps on our own just to be sure.
     
     /** FPS that we want to achieve */
     val targetFPS = 60.0f
-    /** Number of frames to average over when computing real FPS */
-    val fpsAverageCount = 100
     
     /** Drawing handler to use. */
     var dd: DebugDraw = null
 
 
     var world: World = null
+    var controller: Controller = null
 
-    /** Constructor - real initialization happens in setup() function 
-    def Physics() {
-    	super()
-    }
-    *
-  */ 
     
-    /**
-     * Called once upon program initialization (by Processing).
-     * Here we set up graphics, set the framerate, register
-     * all the testbed examples, set up a mousewheel listener,
-     * and set up the frame rate timer.
-     */
     override def setup() {
-    	/* On newer machines especially, the default JAVA2D renderer
-    	 * is slow as hell and tends to drop frames.  I have no idea
-    	 * why, but for now let's use P3D and live without the smoothing...
-    	 */
     	size(640,480,P3D)
     	frameRate(targetFPS)
     	dd = new ProcessingDebugDraw(this)
-    	//smooth();
-        // what is this?
         this.requestFocus()
 
 
@@ -113,6 +70,10 @@ class Physics extends PApplet {
 
         body.setAngularVelocity( 0.2f)
         
+
+        controller  = new Controller()
+        controller.papplet = this
+        controller.start()
                                         
     }
     
@@ -120,6 +81,10 @@ class Physics extends PApplet {
      * This is the main looping function, and is called targetFPS times per second.
      */
     override def draw() {
+        createBots()
+
+
+        // create a message and send it to controller.
 
 
         // draw it and step.
@@ -129,6 +94,12 @@ class Physics extends PApplet {
     }
     
 
+    /**
+     *  perhaps add bots to the world.
+     */ 
+    def createBots() : Unit = {
+      return();
+    }
 
 
 
