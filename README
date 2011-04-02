@@ -1,5 +1,9 @@
 the SHVOID simulation engine for automated control of 2d moving things.
 
+developed with Scala 2.8.0
+
+
+
 Copyright (c) 2010, David Renshaw 
 
 
