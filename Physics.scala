@@ -28,8 +28,6 @@ class Physics extends PApplet {
     /** Was the mouse down last frame? */
     var pmousePressed = false
     
-    
-
     /** FPS that we want to achieve */
     val targetFPS = 60.0f
     
@@ -95,8 +93,24 @@ class Physics extends PApplet {
         createBots()
 
 
-        // create a message and send it to controller.
-        controller ! ('hello, System.nanoTime())
+        for( (id, intent) <- intents){
+          val b = bodies.getOrElse(id, null)
+          val theta = b.getAngle()
+          val p = b.getPosition()
+          val v = b.getLinearVelocity()
+          val u = v.mul(1.0f / (v.length()))
+          val (t,a) = intent
+          a match {
+            case Some(Accel) => b.applyForce(u.mul(1.0f), b.getPosition())
+            case Some(Brake) => b.applyForce(u.mul(-1.0f), b.getPosition())
+            case None => 
+          }
+        }
+
+
+
+          controller ! ('hello, System.nanoTime())
+
 
         // draw it and step.
         background(0)
