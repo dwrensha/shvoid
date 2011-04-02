@@ -1,3 +1,5 @@
+//package shvoid
+
 import processing.core.PApplet
 
 object Main {

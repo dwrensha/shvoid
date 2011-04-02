@@ -21,6 +21,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
+//package shvoid;
+
 
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;

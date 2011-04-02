@@ -1,4 +1,4 @@
-
+//package shvoid
 
 
 import java.util.ArrayList
@@ -18,6 +18,7 @@ import processing.core.PConstants._
 
 
 import Types._
+
 
 class Physics extends PApplet {
 
@@ -39,10 +40,11 @@ class Physics extends PApplet {
     var controller: Controller = new Controller()
 
     
+    var bodies : HashMap[BotID, Body]  = new HashMap[BotID,Body]()    
+    var positions : HashMap[BotID, Vec2]  = new HashMap[BotID,Vec2]()    
+    var intents : SyncMap[BotID, Intent] = new SyncMap[BotID, Intent]()
 
-    var bots : HashMap[BotID, (BotType, Float)]  = new HashMap[BotID,(BotType,Float)]()
-    
-    var intents : HashMap[Int, Intention] = null
+
 
     override def setup() {
     	size(640,480,P3D)
