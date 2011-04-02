@@ -15,7 +15,11 @@ import org.jbox2d.dynamics.World
 import processing.core._
 import processing.core.PConstants._
 
+
+import scala.collection
+
 class Physics extends PApplet {
+
 
     var shiftKey = false
     
@@ -23,16 +27,18 @@ class Physics extends PApplet {
     var pmousePressed = false
     
     
-    
+
     /** FPS that we want to achieve */
     val targetFPS = 60.0f
     
     /** Drawing handler to use. */
     var dd: DebugDraw = null
 
-
     var world: World = null
-    var controller: Controller = null
+    var controller: Controller = new Controller()
+
+    
+
 
     
     override def setup() {
@@ -71,7 +77,7 @@ class Physics extends PApplet {
         body.setAngularVelocity( 0.2f)
         
 
-        controller  = new Controller()
+
         controller.papplet = this
         controller.start()
                                         
@@ -85,7 +91,7 @@ class Physics extends PApplet {
 
 
         // create a message and send it to controller.
-
+        controller ! ('hello, System.nanoTime())
 
         // draw it and step.
         background(0)

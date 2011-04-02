@@ -12,10 +12,20 @@ class Controller extends Actor {
     println("hello from controller")
 
 
-    while(true) {
-      // get everything from mailbox
 
-     // make decisions.
+    while(true) {
+
+      // get everything from mailbox
+      receive {
+        case msg => 
+          println("got message: " + msg)
+
+      }
+      
+
+      // update
+
+
 
 
 
