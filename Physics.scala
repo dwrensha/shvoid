@@ -15,8 +15,9 @@ import org.jbox2d.dynamics.World
 import processing.core._
 import processing.core.PConstants._
 
-import scala.collection.immutable.HashMap
 
+
+import Types._
 
 class Physics extends PApplet {
 
@@ -39,10 +40,9 @@ class Physics extends PApplet {
 
     
 
-
-    var bots : HashMap[Int,(BotType, Float)]  = null
+    var bots : HashMap[BotID, (BotType, Float)]  = new HashMap[BotID,(BotType,Float)]()
     
-   var intents : HashMap[Int, Intention] = null
+    var intents : HashMap[Int, Intention] = null
 
     override def setup() {
     	size(640,480,P3D)
