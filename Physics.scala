@@ -87,8 +87,23 @@ class Physics extends PApplet {
       intents.put(bid,(None,Some(Accel)))
        
       nextBotID+= 1
+    }
+
+
+    def makeObstacle(p: Vec2, sz: Float) = {
+      val sd: PolygonDef = new PolygonDef()
+      sd.setAsBox(sz, sz)
+      sd.restitution = 0.0f
+      sd.friction = 0.5f
+
+      val bd: BodyDef = new BodyDef()
+      bd.position.set(p)
+      val body: Body = world.createBody(bd)
+      body.createShape(sd)
 
     }
+
+
 
     override def setup() {
     	size(800,600,P3D)
@@ -122,6 +137,13 @@ class Physics extends PApplet {
         makeBot(new Vec2(-8.0f,8.0f),new Vec2(0.0f, 0.0f),  0.0f, 0.0f)
 
 
+        makeObstacle(new Vec2(-20.0f,0.0f), 6.0f)
+        makeObstacle(new Vec2(20.0f,0.0f), 6.0f)
+
+        makeObstacle(new Vec2(0.0f,-70.0f), 58.0f)
+        makeObstacle(new Vec2(0.0f,70.0f), 58.0f)
+
+
         controller.papplet = this
         controller.start()
                                         
@@ -151,8 +173,8 @@ class Physics extends PApplet {
 
           }
           a match {
-            case Some(Accel) => b.applyForce(u.mul(4.0f), b.getPosition())
-            case Some(Brake) => b.applyForce(u.mul(-1.0f), b.getPosition())
+            case Some(Accel) => b.applyForce(u.mul(6.0f), b.getPosition())
+            case Some(Brake) => b.applyForce(u.mul(-2.0f), b.getPosition())
             case None => 
           }
 
