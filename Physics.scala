@@ -54,8 +54,8 @@ class Physics extends PApplet {
 
       val bd: BodyDef = new BodyDef()
       bd.position.set(p)
-      bd.linearDamping = 0.2f
-      bd.angularDamping = 0.2f
+      bd.linearDamping = 0.1f
+      bd.angularDamping = 0.1f
       bd.angle = theta
       val body: Body = world.createBody(bd)
       body.createShape(sd)
@@ -72,7 +72,7 @@ class Physics extends PApplet {
     }
 
     override def setup() {
-    	size(640,480,P3D)
+    	size(800,600,P3D)
     	frameRate(targetFPS)
     	dd = new ProcessingDebugDraw(this)
         this.requestFocus()
@@ -87,12 +87,20 @@ class Physics extends PApplet {
         world.setDebugDraw(dd)
     	
         dd.appendFlags(DebugDraw.e_shapeBit);
+        dd.setCamera(0.0f,0.0f, 10.0f);
 
         // add some stuff to the world.
 
         makeBot(new Vec2(0.0f,0.0f),new Vec2(0.0f, 0.0f), 0.0f, 0.0f)
 
-        makeBot(new Vec2(-5.0f,-5.0f),new Vec2(0.0f, 0.0f), 3.14f/2.0f, 0.0f)
+        makeBot(new Vec2(-8.0f,-8.0f),new Vec2(0.0f, 0.0f), 3.1415f/2.0f, 0.0f)
+
+        makeBot(new Vec2(8.0f,8.0f),new Vec2(0.0f, 0.0f), 3.0f * 3.1415f/2.0f, 0.0f)
+
+        makeBot(new Vec2(8.0f,-8.0f),new Vec2(0.0f, 0.0f),  3.1415f, 0.0f)
+
+
+        makeBot(new Vec2(-8.0f,8.0f),new Vec2(0.0f, 0.0f),  0.0f, 0.0f)
 
 
         controller.papplet = this
@@ -133,12 +141,12 @@ class Physics extends PApplet {
 
 
 
-          controller ! ('hello, System.nanoTime())
-
-
         // draw it and step.
         background(0)
         world.step(1.0f / targetFPS, 8)
+
+
+        dd.drawString(5, 30, "Hello world",new Color3f(255.0f,255.0f,255.0f))
         return
     }
     
@@ -148,6 +156,31 @@ class Physics extends PApplet {
      */ 
     def perhapsCreateBots() : Unit = {
       return();
+    }
+
+
+    override def keyPressed(e: java.awt.event.KeyEvent) = {
+      var (t,a) = intents.getOrElse(0,null)
+      if(keyCode == UP) {
+           a = Some(Accel)
+      } else if(keyCode == DOWN) {
+           a = Some(Brake)
+      } else {
+        a = None
+      }
+
+
+      if(keyCode == LEFT) {
+           t = Some(TurnLeft)
+      } else if(keyCode == RIGHT) {
+           t = Some(TurnRight)
+      } else {
+        t = None
+      }
+
+
+      intents.put(0,(t,a))
+
     }
 
 
