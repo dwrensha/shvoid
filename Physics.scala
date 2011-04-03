@@ -31,6 +31,11 @@ class Physics extends PApplet {
     /** FPS that we want to achieve */
     val targetFPS = 60.0f
     
+    var avgFPS = 0.0
+    val numFrames = 100
+    var frameNum = 0
+    var startTime : Long = System.currentTimeMillis()
+
     /** Drawing handler to use. */
     var dd: DebugDraw = null
 
@@ -43,6 +48,20 @@ class Physics extends PApplet {
     var intents : SyncMap[BotID, Intent] = new SyncMap[BotID, Intent]()
 
     private var nextBotID = 0;
+
+
+  def trackFPS() = {
+    frameNum += 1
+    if (frameNum == numFrames){
+      val newTime = System.currentTimeMillis()
+      avgFPS = numFrames * 1000 /  (newTime - startTime).asInstanceOf[Double];
+//     avgFPS =  1.0 *  (newTime - startTime);
+      frameNum = 0
+      startTime = newTime
+    }
+
+  }
+
 
     def makeBot(p: Vec2, v: Vec2, theta:Float , omega: Float) = {
       val sd: PolygonDef = new PolygonDef()
@@ -112,6 +131,7 @@ class Physics extends PApplet {
      * This is the main looping function, and is called targetFPS times per second.
      */
     override def draw() {
+        trackFPS()
         perhapsCreateBots()
 
 
@@ -146,10 +166,11 @@ class Physics extends PApplet {
         world.step(1.0f / targetFPS, 8)
 
 
-        dd.drawString(5, 30, "Hello world",new Color3f(255.0f,255.0f,255.0f))
+        dd.drawString(5, 30, "FPS: " + avgFPS ,new Color3f(255.0f,255.0f,255.0f))
         return
     }
     
+
 
     /**
      *  perhaps add bots to the world.
@@ -159,6 +180,12 @@ class Physics extends PApplet {
     }
 
 
+
+
+
+    /*
+     * Do I have to worry about thread safety here?
+  */ 
     override def keyPressed(e: java.awt.event.KeyEvent) = {
       var (t,a) = intents.getOrElse(0,null)
       if(keyCode == UP) {
