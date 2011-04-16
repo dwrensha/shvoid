@@ -18,6 +18,7 @@ import processing.core.PConstants._
 
 
 import Types._
+import PhysicsTypes._
 
 
 class Physics extends PApplet {
@@ -42,8 +43,12 @@ class Physics extends PApplet {
     var world: World = null
     var controller: Controller = new Controller()
 
+
     
-    var bodies : HashMap[BotID, Body]  = new HashMap[BotID,Body]()    
+    var livebots : HashMap[BotID, LiveBotInfo]  = 
+      new HashMap[BotID,LiveBotInfo]()    
+    var donebots : HashMap[BotID, DoneBotInfo]  = 
+      new HashMap[BotID,DoneBotInfo]()    
 //    var positions : HashMap[BotID, Vec2]  = new HashMap[BotID,Vec2]()    
     var intents : SyncMap[BotID, Intent] = new SyncMap[BotID, Intent]()
 
@@ -52,7 +57,7 @@ class Physics extends PApplet {
 //    val maxspeed = 10.0f;
 //    val maxomega = 5.0f;
   val MAXFORCE = 15.0f;
-  val MAXBRAKE = 5.0f;
+  val MAXBRAKE = 10.0f;
   val MAXTORQUE = 5.0f;
 
   def trackFPS() = {
@@ -68,7 +73,7 @@ class Physics extends PApplet {
   }
 
 
-    def makeBot(p: Vec2, v: Vec2, theta:Float , omega: Float) = {
+    def makeBot(p: Vec2, v: Vec2, gl: Goal, theta:Float , omega: Float) = {
       val sd: PolygonDef = new PolygonDef()
       val a = 0.5f;
       sd.setAsBox(1.5f * a, a)
@@ -88,7 +93,9 @@ class Physics extends PApplet {
       body.setAngularVelocity( omega)
       
       val bid = nextBotID
-      bodies.put(bid, body)
+      livebots.put(bid, new LiveBotInfo(body, 
+                                        gl,  
+                                        System.currentTimeMillis()))
       intents.put(bid,(None,Some(Accel)))
        
       nextBotID+= 1
@@ -130,17 +137,15 @@ class Physics extends PApplet {
 
         // add some stuff to the world.
 
-        makeBot(new Vec2(0.0f,0.0f),new Vec2(0.0f, 0.0f), 0.0f, 0.0f)
+        makeBot(new Vec2(0.0f,0.0f),
+                new Vec2(0.0f, 0.0f), 
+                (new Vec2(500.0f, 500.0f), 0.0f),
+                0.0f, 0.0f)
 
-        makeBot(new Vec2(-8.0f,-8.0f),new Vec2(0.0f, 0.0f), 3.1415f/2.0f, 0.0f)
-
-        makeBot(new Vec2(8.0f,8.0f),
-                new Vec2(0.0f, 0.0f), 3.0f * 3.1415f/2.0f, 0.0f)
-
-        makeBot(new Vec2(8.0f,-8.0f),new Vec2(0.0f, 0.0f),  3.1415f, 0.0f)
-
-
-        makeBot(new Vec2(-8.0f,8.0f),new Vec2(0.0f, 0.0f),  0.0f, 0.0f)
+        makeBot(new Vec2(-8.0f,0.0f),
+                new Vec2(0.0f, 0.0f), 
+                (new Vec2(-50.0f, 0.0f), 5.0f),
+                3.1415f, 0.0f)
 
 
         makeObstacle(new Vec2(-102.0f,-102.0f), 98.0f)
@@ -162,34 +167,57 @@ class Physics extends PApplet {
         trackFPS()
         perhapsCreateBots()
 
+        var toRemove: List[BotID] = Nil
 
         for( (id, intent) <- intents){
-          val b = bodies.getOrElse(id, null)
-          val theta = b.getAngle()
+          val botinfo = livebots.getOrElse(id, null)
+          val b = botinfo.body
+          val gl@(glv, glr) = botinfo.goal
           val p = b.getPosition()
-          val v = b.getLinearVelocity()
-          val u = new Vec2(scala.math.cos(theta).asInstanceOf[Float], 
-                           scala.math.sin(theta).asInstanceOf[Float])
-          val (t,a) = intent
-          controller ! ((id, p,v ))
-          t match {
-            case Some(TurnLeft) => 
-              b.applyTorque(MAXTORQUE)
-            case Some(TurnRight) => 
-              b.applyTorque(- MAXTORQUE)
-            case None => 
+          if(glv.sub(p).length() < glr){
+//            controller ! ((id, p,v ))
+            val st = botinfo.starttime
+            toRemove = id :: toRemove
+            donebots.put(id, new DoneBotInfo(gl, 
+                                             st,
+                                             System.currentTimeMillis()))
 
+          }else {
+            val theta = b.getAngle()
+            val v = b.getLinearVelocity()
+            val u = new Vec2(scala.math.cos(theta).asInstanceOf[Float], 
+                             scala.math.sin(theta).asInstanceOf[Float])
+            val (t,a) = intent
+            controller ! ((id, p,v ))
+            t match {
+              case Some(TurnLeft) => 
+                b.applyTorque(MAXTORQUE)
+              case Some(TurnRight) => 
+                b.applyTorque(- MAXTORQUE)
+              case None => 
+
+            }
+            a match {
+              case Some(Accel) => 
+                b.applyForce(u.mul(MAXFORCE), b.getPosition())
+              case Some(Brake) => 
+                b.applyForce(u.mul(- MAXBRAKE), b.getPosition())
+              case None => 
+            }
           }
-          a match {
-            case Some(Accel) => 
-              b.applyForce(u.mul(MAXFORCE), b.getPosition())
-            case Some(Brake) => 
-              b.applyForce(u.mul(- MAXBRAKE), b.getPosition())
-            case None => 
-          }
+
 
           
         }
+
+
+      for(id <- toRemove){
+        val bodyinfo= livebots.getOrElse(id, null)
+        intents.remove(id)
+        livebots.remove(id)
+        world.destroyBody(bodyinfo.body)
+        
+      }
 
 
 
