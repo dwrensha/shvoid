@@ -162,8 +162,10 @@ class Physics extends PApplet {
           val theta = b.getAngle()
           val p = b.getPosition()
           val v = b.getLinearVelocity()
+          val vmag = v.length()
           val u = new Vec2(scala.math.cos(theta).asInstanceOf[Float], 
                            scala.math.sin(theta).asInstanceOf[Float])
+//          val _ = b.setLinearVelocity(u.mul(vmag))
           val (t,a) = intent
           controller ! ((id, p,v ))
           t match {
@@ -177,6 +179,8 @@ class Physics extends PApplet {
             case Some(Brake) => b.applyForce(u.mul(-2.0f), b.getPosition())
             case None => 
           }
+
+
 
           
         }
