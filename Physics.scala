@@ -139,7 +139,7 @@ class Physics extends PApplet {
 
         makeBot(new Vec2(0.0f,0.0f),
                 new Vec2(0.0f, 0.0f), 
-                (new Vec2(500.0f, 500.0f), 0.0f),
+                (new Vec2(80.0f, 0.0f), 5.0f),
                 0.0f, 0.0f)
 
         makeBot(new Vec2(-8.0f,0.0f),
@@ -161,7 +161,8 @@ class Physics extends PApplet {
     }
     
     /**
-     * This is the main looping function, and is called targetFPS times per second.
+     * This is the main looping function,
+     * and is called targetFPS times per second.
      */
     override def draw() {
         trackFPS()
@@ -169,8 +170,8 @@ class Physics extends PApplet {
 
         var toRemove: List[BotID] = Nil
 
-        for( (id, intent) <- intents){
-          val botinfo = livebots.getOrElse(id, null)
+        for((id,botinfo) <- livebots ){
+          val intent = intents.getOrElse(id,null)
           val b = botinfo.body
           val gl@(glv, glr) = botinfo.goal
           val p = b.getPosition()
@@ -247,7 +248,7 @@ class Physics extends PApplet {
      * Do I have to worry about thread safety here?
   */ 
     override def keyPressed(e: java.awt.event.KeyEvent) = {
-      var (t,a) = intents.getOrElse(0,null)
+      var (t,a) = intents.getOrElse(0,(None,None))
       if(keyCode == UP) {
            a = Some(Accel)
       } else if(keyCode == DOWN) {
@@ -255,7 +256,6 @@ class Physics extends PApplet {
       } else {
         a = None
       }
-
 
       if(keyCode == LEFT) {
            t = Some(TurnLeft)
