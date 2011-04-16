@@ -23,6 +23,7 @@ import PhysicsTypes._
 
 class Physics extends PApplet {
 
+    val pi = 3.14159265f
 
     var shiftKey = false
     
@@ -145,7 +146,7 @@ class Physics extends PApplet {
         makeBot(new Vec2(-8.0f,0.0f),
                 new Vec2(0.0f, 0.0f), 
                 (new Vec2(-50.0f, 0.0f), 5.0f),
-                3.1415f, 0.0f)
+                pi, 0.0f)
 
 
         makeObstacle(new Vec2(-102.0f,-102.0f), 98.0f)
@@ -232,11 +233,36 @@ class Physics extends PApplet {
     }
     
 
+    val spawnpoints = 
+      Array(new Vec2(2f,90f),
+            new Vec2(-90f,2f),
+            new Vec2(-2f,-90f),
+            new Vec2(90f,-2f))
+
+    val spawnangles = 
+      Array(0
+        
+      )
+
+    val donepoints = 
+      Array(new Vec2(2f,-90f),
+            new Vec2(90f,2f),
+            new Vec2(-2f,90f),
+            new Vec2(-90f,-2f))
+
+          
+  
+
+  
 
     /**
      *  perhaps add bots to the world.
      */ 
     def perhapsCreateBots() : Unit = {
+
+      
+
+
       return();
     }
 
