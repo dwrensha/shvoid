@@ -49,6 +49,11 @@ class Physics extends PApplet {
 
     private var nextBotID = 0;
 
+//    val maxspeed = 10.0f;
+//    val maxomega = 5.0f;
+  val MAXFORCE = 15.0f;
+  val MAXBRAKE = 5.0f;
+  val MAXTORQUE = 5.0f;
 
   def trackFPS() = {
     frameNum += 1
@@ -74,7 +79,7 @@ class Physics extends PApplet {
       val bd: BodyDef = new BodyDef()
       bd.position.set(p)
       bd.linearDamping = 0.1f
-      bd.angularDamping = 0.1f
+      bd.angularDamping = 0.5f
       bd.angle = theta
       val body: Body = world.createBody(bd)
       body.createShape(sd)
@@ -113,7 +118,7 @@ class Physics extends PApplet {
 
 
         val worldAABB:AABB = new AABB()
-        worldAABB.lowerBound = new Vec2(-200.0f, -100.0f)
+        worldAABB.lowerBound = new Vec2(-200.0f, -200.0f)
         worldAABB.upperBound = new Vec2(200.0f, 200.0f)
         val gravity:Vec2 = new Vec2(0.0f, 0.0f)
         val doSleep = true
@@ -121,7 +126,7 @@ class Physics extends PApplet {
         world.setDebugDraw(dd)
     	
         dd.appendFlags(DebugDraw.e_shapeBit);
-        dd.setCamera(0.0f,0.0f, 10.0f);
+        dd.setCamera(0.0f,0.0f, 3.0f);
 
         // add some stuff to the world.
 
@@ -129,7 +134,8 @@ class Physics extends PApplet {
 
         makeBot(new Vec2(-8.0f,-8.0f),new Vec2(0.0f, 0.0f), 3.1415f/2.0f, 0.0f)
 
-        makeBot(new Vec2(8.0f,8.0f),new Vec2(0.0f, 0.0f), 3.0f * 3.1415f/2.0f, 0.0f)
+        makeBot(new Vec2(8.0f,8.0f),
+                new Vec2(0.0f, 0.0f), 3.0f * 3.1415f/2.0f, 0.0f)
 
         makeBot(new Vec2(8.0f,-8.0f),new Vec2(0.0f, 0.0f),  3.1415f, 0.0f)
 
@@ -137,11 +143,11 @@ class Physics extends PApplet {
         makeBot(new Vec2(-8.0f,8.0f),new Vec2(0.0f, 0.0f),  0.0f, 0.0f)
 
 
-        makeObstacle(new Vec2(-20.0f,0.0f), 6.0f)
-        makeObstacle(new Vec2(20.0f,0.0f), 6.0f)
+        makeObstacle(new Vec2(-102.0f,-102.0f), 98.0f)
+        makeObstacle(new Vec2(-102.0f,102.0f), 98.0f)
 
-        makeObstacle(new Vec2(0.0f,-70.0f), 58.0f)
-        makeObstacle(new Vec2(0.0f,70.0f), 58.0f)
+        makeObstacle(new Vec2(102.0f,-102.0f), 98.0f)
+        makeObstacle(new Vec2(102.0f,102.0f), 98.0f)
 
 
         controller.papplet = this
@@ -167,14 +173,18 @@ class Physics extends PApplet {
           val (t,a) = intent
           controller ! ((id, p,v ))
           t match {
-            case Some(TurnLeft) => b.applyTorque(1.0f)
-            case Some(TurnRight) => b.applyTorque(-1.0f)
+            case Some(TurnLeft) => 
+              b.applyTorque(MAXTORQUE)
+            case Some(TurnRight) => 
+              b.applyTorque(- MAXTORQUE)
             case None => 
 
           }
           a match {
-            case Some(Accel) => b.applyForce(u.mul(6.0f), b.getPosition())
-            case Some(Brake) => b.applyForce(u.mul(-2.0f), b.getPosition())
+            case Some(Accel) => 
+              b.applyForce(u.mul(MAXFORCE), b.getPosition())
+            case Some(Brake) => 
+              b.applyForce(u.mul(- MAXBRAKE), b.getPosition())
             case None => 
           }
 
