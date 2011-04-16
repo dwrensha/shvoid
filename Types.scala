@@ -31,3 +31,25 @@ object Types {
 
   
 }
+
+
+object PhysicsTypes{
+  import org.jbox2d.dynamics.Body
+  import org.jbox2d.common.Vec2
+
+  type Goal = (Vec2, Float);
+
+  class LiveBotInfo(bd: Body, gl: Goal, st: Long ) {
+    val body = bd
+    val goal = gl
+    val starttime = st
+  }
+
+  class DoneBotInfo(gl: Goal, st: Long, et: Long ) {
+    val goal = gl
+    val starttime = st
+    val endtime = st
+  }
+  
+
+}

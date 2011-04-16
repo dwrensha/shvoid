@@ -18,10 +18,12 @@ import processing.core.PConstants._
 
 
 import Types._
+import PhysicsTypes._
 
 
 class Physics extends PApplet {
 
+    val pi = 3.14159265f
 
     var shiftKey = false
     
@@ -42,13 +44,22 @@ class Physics extends PApplet {
     var world: World = null
     var controller: Controller = new Controller()
 
+
     
-    var bodies : HashMap[BotID, Body]  = new HashMap[BotID,Body]()    
+    var livebots : HashMap[BotID, LiveBotInfo]  = 
+      new HashMap[BotID,LiveBotInfo]()    
+    var donebots : HashMap[BotID, DoneBotInfo]  = 
+      new HashMap[BotID,DoneBotInfo]()    
 //    var positions : HashMap[BotID, Vec2]  = new HashMap[BotID,Vec2]()    
     var intents : SyncMap[BotID, Intent] = new SyncMap[BotID, Intent]()
 
     private var nextBotID = 0;
 
+//    val maxspeed = 10.0f;
+//    val maxomega = 5.0f;
+  val MAXFORCE = 15.0f;
+  val MAXBRAKE = 10.0f;
+  val MAXTORQUE = 5.0f;
 
   def trackFPS() = {
     frameNum += 1
@@ -63,7 +74,7 @@ class Physics extends PApplet {
   }
 
 
-    def makeBot(p: Vec2, v: Vec2, theta:Float , omega: Float) = {
+    def makeBot(p: Vec2, v: Vec2, gl: Goal, theta:Float , omega: Float) = {
       val sd: PolygonDef = new PolygonDef()
       val a = 0.5f;
       sd.setAsBox(1.5f * a, a)
@@ -74,7 +85,7 @@ class Physics extends PApplet {
       val bd: BodyDef = new BodyDef()
       bd.position.set(p)
       bd.linearDamping = 0.1f
-      bd.angularDamping = 0.1f
+      bd.angularDamping = 0.5f
       bd.angle = theta
       val body: Body = world.createBody(bd)
       body.createShape(sd)
@@ -83,7 +94,9 @@ class Physics extends PApplet {
       body.setAngularVelocity( omega)
       
       val bid = nextBotID
-      bodies.put(bid, body)
+      livebots.put(bid, new LiveBotInfo(body, 
+                                        gl,  
+                                        System.currentTimeMillis()))
       intents.put(bid,(None,Some(Accel)))
        
       nextBotID+= 1
@@ -113,7 +126,7 @@ class Physics extends PApplet {
 
 
         val worldAABB:AABB = new AABB()
-        worldAABB.lowerBound = new Vec2(-200.0f, -100.0f)
+        worldAABB.lowerBound = new Vec2(-200.0f, -200.0f)
         worldAABB.upperBound = new Vec2(200.0f, 200.0f)
         val gravity:Vec2 = new Vec2(0.0f, 0.0f)
         val doSleep = true
@@ -121,27 +134,26 @@ class Physics extends PApplet {
         world.setDebugDraw(dd)
     	
         dd.appendFlags(DebugDraw.e_shapeBit);
-        dd.setCamera(0.0f,0.0f, 10.0f);
+        dd.setCamera(0.0f,0.0f, 3.0f);
 
         // add some stuff to the world.
 
-        makeBot(new Vec2(0.0f,0.0f),new Vec2(0.0f, 0.0f), 0.0f, 0.0f)
+        makeBot(new Vec2(0.0f,0.0f),
+                new Vec2(0.0f, 0.0f), 
+                (new Vec2(80.0f, 0.0f), 5.0f),
+                0.0f, 0.0f)
 
-        makeBot(new Vec2(-8.0f,-8.0f),new Vec2(0.0f, 0.0f), 3.1415f/2.0f, 0.0f)
-
-        makeBot(new Vec2(8.0f,8.0f),new Vec2(0.0f, 0.0f), 3.0f * 3.1415f/2.0f, 0.0f)
-
-        makeBot(new Vec2(8.0f,-8.0f),new Vec2(0.0f, 0.0f),  3.1415f, 0.0f)
-
-
-        makeBot(new Vec2(-8.0f,8.0f),new Vec2(0.0f, 0.0f),  0.0f, 0.0f)
+        makeBot(new Vec2(-8.0f,0.0f),
+                new Vec2(0.0f, 0.0f), 
+                (new Vec2(-50.0f, 0.0f), 5.0f),
+                pi, 0.0f)
 
 
-        makeObstacle(new Vec2(-20.0f,0.0f), 6.0f)
-        makeObstacle(new Vec2(20.0f,0.0f), 6.0f)
+        makeObstacle(new Vec2(-102.0f,-102.0f), 98.0f)
+        makeObstacle(new Vec2(-102.0f,102.0f), 98.0f)
 
-        makeObstacle(new Vec2(0.0f,-70.0f), 58.0f)
-        makeObstacle(new Vec2(0.0f,70.0f), 58.0f)
+        makeObstacle(new Vec2(102.0f,-102.0f), 98.0f)
+        makeObstacle(new Vec2(102.0f,102.0f), 98.0f)
 
 
         controller.papplet = this
@@ -150,40 +162,65 @@ class Physics extends PApplet {
     }
     
     /**
-     * This is the main looping function, and is called targetFPS times per second.
+     * This is the main looping function,
+     * and is called targetFPS times per second.
      */
     override def draw() {
         trackFPS()
         perhapsCreateBots()
 
+        var toRemove: List[BotID] = Nil
 
-        for( (id, intent) <- intents){
-          val b = bodies.getOrElse(id, null)
-          val theta = b.getAngle()
+        for((id,botinfo) <- livebots ){
+          val intent = intents.getOrElse(id,null)
+          val b = botinfo.body
+          val gl@(glv, glr) = botinfo.goal
           val p = b.getPosition()
-          val v = b.getLinearVelocity()
-          val vmag = v.length()
-          val u = new Vec2(scala.math.cos(theta).asInstanceOf[Float], 
-                           scala.math.sin(theta).asInstanceOf[Float])
+          if(glv.sub(p).length() < glr){
+//            controller ! ((id, p,v ))
+            val st = botinfo.starttime
+            toRemove = id :: toRemove
+            donebots.put(id, new DoneBotInfo(gl, 
+                                             st,
+                                             System.currentTimeMillis()))
+
+          }else {
+            val theta = b.getAngle()
+            val v = b.getLinearVelocity()
+            val u = new Vec2(scala.math.cos(theta).asInstanceOf[Float], 
+                             scala.math.sin(theta).asInstanceOf[Float])
 //          val _ = b.setLinearVelocity(u.mul(vmag))
-          val (t,a) = intent
-          controller ! ((id, p,v ))
-          t match {
-            case Some(TurnLeft) => b.applyTorque(1.0f)
-            case Some(TurnRight) => b.applyTorque(-1.0f)
-            case None => 
+            val (t,a) = intent
+            controller ! ((id, p,v ))
+            t match {
+              case Some(TurnLeft) => 
+                b.applyTorque(MAXTORQUE)
+              case Some(TurnRight) => 
+                b.applyTorque(- MAXTORQUE)
+              case None => 
 
+            }
+            a match {
+              case Some(Accel) => 
+                b.applyForce(u.mul(MAXFORCE), b.getPosition())
+              case Some(Brake) => 
+                b.applyForce(u.mul(- MAXBRAKE), b.getPosition())
+              case None => 
+            }
           }
-          a match {
-            case Some(Accel) => b.applyForce(u.mul(6.0f), b.getPosition())
-            case Some(Brake) => b.applyForce(u.mul(-2.0f), b.getPosition())
-            case None => 
-          }
-
 
 
           
         }
+
+
+      for(id <- toRemove){
+        val bodyinfo= livebots.getOrElse(id, null)
+        intents.remove(id)
+        livebots.remove(id)
+        world.destroyBody(bodyinfo.body)
+        
+      }
 
 
 
@@ -197,11 +234,36 @@ class Physics extends PApplet {
     }
     
 
+    val spawnpoints = 
+      Array(new Vec2(2f,90f),
+            new Vec2(-90f,2f),
+            new Vec2(-2f,-90f),
+            new Vec2(90f,-2f))
+
+    val spawnangles = 
+      Array(0
+        
+      )
+
+    val donepoints = 
+      Array(new Vec2(2f,-90f),
+            new Vec2(90f,2f),
+            new Vec2(-2f,90f),
+            new Vec2(-90f,-2f))
+
+          
+  
+
+  
 
     /**
      *  perhaps add bots to the world.
      */ 
     def perhapsCreateBots() : Unit = {
+
+      
+
+
       return();
     }
 
@@ -213,7 +275,7 @@ class Physics extends PApplet {
      * Do I have to worry about thread safety here?
   */ 
     override def keyPressed(e: java.awt.event.KeyEvent) = {
-      var (t,a) = intents.getOrElse(0,null)
+      var (t,a) = intents.getOrElse(0,(None,None))
       if(keyCode == UP) {
            a = Some(Accel)
       } else if(keyCode == DOWN) {
@@ -221,7 +283,6 @@ class Physics extends PApplet {
       } else {
         a = None
       }
-
 
       if(keyCode == LEFT) {
            t = Some(TurnLeft)
