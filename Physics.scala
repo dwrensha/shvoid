@@ -24,6 +24,7 @@ import PhysicsTypes._
 class Physics extends PApplet {
 
     val pi = 3.14159265f
+    val zerovec = new Vec2(0f,0f)
 
     var shiftKey = false
     
@@ -235,33 +236,48 @@ class Physics extends PApplet {
     
 
     val spawnpoints = 
-      Array(new Vec2(2f,90f),
-            new Vec2(-90f,2f),
-            new Vec2(-2f,-90f),
-            new Vec2(90f,-2f))
+      Array(new Vec2(2f,-90f),
+            new Vec2(-90f,-2f),
+            new Vec2(-2f,90f),
+            new Vec2(90f,2f))
+
+    val spawnvels = 
+      Array(new Vec2(0f,5f),
+            new Vec2(5f,0f),
+            new Vec2(0f,-5f),
+            new Vec2(-5f,0f))
 
     val spawnangles = 
-      Array(0
-        
+      Array(pi / 2.0f,
+            0f,
+            3f * pi / 2f,
+            pi
       )
 
-    val donepoints = 
-      Array(new Vec2(2f,-90f),
-            new Vec2(90f,2f),
-            new Vec2(-2f,90f),
-            new Vec2(-90f,-2f))
+    val goals = 
+      Array((new Vec2(2f,90f), 5.0f  ),
+            (new Vec2(90f,-2f), 5f),
+            (new Vec2(-2f,-90f), 5f),
+            (new Vec2(-90f,2f), 5f))
 
           
-  
 
-  
+   val  rand = new scala.util.Random(System.currentTimeMillis())
 
     /**
      *  perhaps add bots to the world.
      */ 
     def perhapsCreateBots() : Unit = {
 
-      
+      if(rand.nextDouble < 0.03){
+        val i = rand.nextInt(4)
+        val spawn = spawnpoints(i)
+        val v = spawnvels(i)
+        val angle = spawnangles(i)
+        val gl = goals(i)
+        makeBot(spawn, v, gl, angle, 0f)
+        
+      }
 
 
       return();
