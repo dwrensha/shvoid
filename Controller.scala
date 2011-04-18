@@ -19,6 +19,10 @@ class Controller extends Actor {
 
       // get everything from mailbox
       receive {
+        case ('BotSpawn, id, spawn, v, gl, angle, omega ) =>
+          println("a bot spawned.")
+        case ('BotDone, id ) =>
+          println("a bot reached its goal.")
         case msg => 
           println("got message: " + msg)
 
