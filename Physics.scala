@@ -43,7 +43,7 @@ class Physics extends PApplet {
     var dd: DebugDraw = null
 
     var world: World = null
-    var controller: Controller = new Controller()
+
 
 
     
@@ -61,6 +61,8 @@ class Physics extends PApplet {
   val MAXFORCE = 15.0f;
   val MAXBRAKE = 10.0f;
   val MAXTORQUE = 5.0f;
+
+  var controller: Controller = new Controller(intents)
 
   def trackFPS() = {
     frameNum += 1
@@ -156,7 +158,6 @@ class Physics extends PApplet {
         makeObstacle(new Vec2(102.0f,102.0f), 98.0f)
 
 
-        controller.papplet = this
         controller.start()
                                         
     }
@@ -187,6 +188,7 @@ class Physics extends PApplet {
           }else {
             val theta = b.getAngle()
             val v = b.getLinearVelocity()
+            val vmag = v.length()
             val u = new Vec2(scala.math.cos(theta).asInstanceOf[Float], 
                              scala.math.sin(theta).asInstanceOf[Float])
 //          val _ = b.setLinearVelocity(u.mul(vmag))
@@ -203,8 +205,12 @@ class Physics extends PApplet {
             a match {
               case Some(Accel) => 
                 b.applyForce(u.mul(MAXFORCE), b.getPosition())
-              case Some(Brake) => 
-                b.applyForce(u.mul(- MAXBRAKE), b.getPosition())
+              case Some(Brake) =>
+                if(Vec2.dot(v, u)  > 0){
+                  b.applyForce(u.mul(- MAXBRAKE), b.getPosition())
+                } else {
+                  b.setLinearVelocity(zerovec)
+                }
               case None => 
             }
           }
@@ -221,16 +227,16 @@ class Physics extends PApplet {
         world.destroyBody(bodyinfo.body)
         
       }
+      
+      controller ! 'StepDone
+
+      // draw it and step.
+      background(0)
+      world.step(1.0f / targetFPS, 8)
 
 
-
-        // draw it and step.
-        background(0)
-        world.step(1.0f / targetFPS, 8)
-
-
-        dd.drawString(5, 30, "FPS: " + avgFPS ,new Color3f(255.0f,255.0f,255.0f))
-        return
+      dd.drawString(5, 30, "FPS: " + avgFPS ,new Color3f(255.0f,255.0f,255.0f))
+      return
     }
     
 
