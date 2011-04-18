@@ -14,7 +14,7 @@ class Controller(intents: SyncMap[BotID, Intent],
 
   case class BotInfo(pos : Vec2,
                      vel : Vec2,
-                     next: BotID, // position of next car
+                     next: BotID, //  next car
                      obs : List[Vec2] //position of obstacles to avoid
                      )
 
@@ -26,10 +26,12 @@ class Controller(intents: SyncMap[BotID, Intent],
   val lanetails = Array(nobot,nobot,nobot, nobot)
 
   val intersection = new Vec2(0f,0f)
+  var lockHolder : Option[BotID]= None
+
 
   val FOLLOW_DISTANCE = 4f;
-
   val INTERSECTION_DISTANCE = 6f;
+  val RELEASE_LOCK_DISTANCE = 4f;
 
 //  var intents : SyncMap[BotID, Intent] = it
   
@@ -79,6 +81,11 @@ class Controller(intents: SyncMap[BotID, Intent],
       // Each car makes a decision about what to do.
 
       for((id,BotInfo(p,v,nxt,obs)) <- bots) {
+        if(lockHolder == Some(id) 
+           &&  Vec2.dot(p.sub(intersection),v) > 0f 
+           && p.sub(intersection).length > RELEASE_LOCK_DISTANCE){
+             lockHolder = None
+        }
         bots.get(nxt) match {
           case Some(BotInfo(p1,v1,_,_)) 
            if 2f * MAX_B * (p.sub(p1).length  - FOLLOW_DISTANCE ) < 
@@ -86,13 +93,20 @@ class Controller(intents: SyncMap[BotID, Intent],
                (MAX_A + MAX_B) * (MAX_A * EPS * EPS + 2f * EPS * v.length)
             => intents.put(id,(None,Some(Brake)))
           case _ =>
-            obs match {
-              case List(ob) 
-                if 2f * MAX_B * (p.sub(ob).length - INTERSECTION_DISTANCE ) < 
+             obs match {
+              case List(ob)
+                if 
+                  2f * MAX_B * (p.sub(ob).length - INTERSECTION_DISTANCE ) < 
                   v.lengthSquared() + 
                   (MAX_A + MAX_B) * (MAX_A * EPS * EPS + 2f * EPS * v.length)
                 => 
-                intents.put(id,(None,Some(Brake)))
+                  lockHolder match {
+                    case Some(_) => 
+                      intents.put(id,(None,Some(Brake)))
+                    case None =>
+                      lockHolder = Some(id)
+                      bots.put(id, BotInfo(p,v,nxt,Nil))
+                  }
               case _ => 
                 val r = rand.nextDouble
                 if (r < 0.8){
@@ -108,7 +122,8 @@ class Controller(intents: SyncMap[BotID, Intent],
        }
 
 
-      println("mailbox size = " + mailboxSize)
+      println("lockholder = " + lockHolder)
+      //println("mailbox size = " + mailboxSize)
 
 
 
