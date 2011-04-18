@@ -25,7 +25,7 @@ object Types {
   type HashMap[A,B] = scala.collection.mutable.HashMap[A,B] 
 
   type BotID = Int
-
+  val nobot = -1;
 
   type Intent = (Option[TurnIntent], Option[AccelIntent])
 

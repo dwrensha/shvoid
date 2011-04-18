@@ -193,7 +193,7 @@ class Physics extends PApplet {
                              scala.math.sin(theta).asInstanceOf[Float])
 //          val _ = b.setLinearVelocity(u.mul(vmag))
             val (t,a) = intent
-            controller ! ((id, p,v ))
+            controller ! (('BotUpdate, id, p,v ))
             t match {
               case Some(TurnLeft) => 
                 b.applyTorque(MAXTORQUE)
@@ -219,7 +219,6 @@ class Physics extends PApplet {
           
         }
 
-
       for(id <- toRemove){
         val bodyinfo= livebots.getOrElse(id, null)
         intents.remove(id)
@@ -240,6 +239,15 @@ class Physics extends PApplet {
     }
     
 
+  /****2 ****
+   ****  ****
+   ****  ****
+            3
+   1
+   ****  ****
+   ****  ****
+   **** 0****
+  */
     val spawnpoints = 
       Array(new Vec2(2f,-90f),
             new Vec2(-90f,-2f),
@@ -260,7 +268,7 @@ class Physics extends PApplet {
       )
 
     val goals = 
-      Array((new Vec2(2f,90f), 5.0f  ),
+      Array((new Vec2(2f,90f), 5.0f),
             (new Vec2(90f,-2f), 5f),
             (new Vec2(-2f,-90f), 5f),
             (new Vec2(-90f,2f), 5f))
@@ -290,7 +298,7 @@ class Physics extends PApplet {
             val gl = goals(i)
             val omega = 0f;
             val id = makeBot(spawn, v, gl, angle, omega )
-            controller ! (('BotSpawn, id, spawn, v, gl, angle, omega ))
+            controller ! (('BotSpawn, id, spawn, v, angle, omega, i ))
             ticks.update(i,spawndelay)
           }
         }
