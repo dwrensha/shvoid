@@ -75,7 +75,7 @@ class Physics extends PApplet {
   }
 
 
-    def makeBot(p: Vec2, v: Vec2, gl: Goal, theta:Float , omega: Float) = {
+    def makeBot(p: Vec2, v: Vec2, gl: Goal, theta:Float , omega: Float) : Int = {
       val sd: PolygonDef = new PolygonDef()
       val a = 0.5f;
       sd.setAsBox(1.5f * a, a)
@@ -101,6 +101,9 @@ class Physics extends PApplet {
       intents.put(bid,(None,Some(Accel)))
        
       nextBotID+= 1
+
+      return nextBotID - 1;
+
     }
 
 
@@ -144,10 +147,6 @@ class Physics extends PApplet {
                 (new Vec2(80.0f, 0.0f), 5.0f),
                 0.0f, 0.0f)
 
-        makeBot(new Vec2(-8.0f,0.0f),
-                new Vec2(0.0f, 0.0f), 
-                (new Vec2(-50.0f, 0.0f), 5.0f),
-                pi, 0.0f)
 
 
         makeObstacle(new Vec2(-102.0f,-102.0f), 98.0f)
@@ -178,7 +177,7 @@ class Physics extends PApplet {
           val gl@(glv, glr) = botinfo.goal
           val p = b.getPosition()
           if(glv.sub(p).length() < glr){
-//            controller ! ((id, p,v ))
+            controller ! (('BotDone, id ))
             val st = botinfo.starttime
             toRemove = id :: toRemove
             donebots.put(id, new DoneBotInfo(gl, 
@@ -276,7 +275,9 @@ class Physics extends PApplet {
         val v = spawnvels(i)
         val angle = spawnangles(i)
         val gl = goals(i)
-        makeBot(spawn, v, gl, angle, 0f)
+        val omega = 0f;
+        val id = makeBot(spawn, v, gl, angle, omega )
+        controller ! (('BotSpawn, id, spawn, v, gl, angle, omega ))
         
       }
 
