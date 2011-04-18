@@ -82,10 +82,12 @@ class Controller(intents: SyncMap[BotID, Intent],
 
       for((id,BotInfo(p,v,nxt,obs)) <- bots) {
         if(lockHolder == Some(id) 
+           && v.length() > 0.1f
            &&  Vec2.dot(p.sub(intersection),v) > 0f 
            && p.sub(intersection).length > RELEASE_LOCK_DISTANCE){
              lockHolder = None
-        }
+           }
+
         bots.get(nxt) match {
           case Some(BotInfo(p1,v1,_,_)) 
            if 2f * MAX_B * (p.sub(p1).length  - FOLLOW_DISTANCE ) < 
@@ -99,14 +101,16 @@ class Controller(intents: SyncMap[BotID, Intent],
                   2f * MAX_B * (p.sub(ob).length - INTERSECTION_DISTANCE ) < 
                   v.lengthSquared() + 
                   (MAX_A + MAX_B) * (MAX_A * EPS * EPS + 2f * EPS * v.length)
-                => 
+                =>
                   lockHolder match {
                     case Some(_) => 
                       intents.put(id,(None,Some(Brake)))
                     case None =>
+                      println("GRABBING LOCK. " + id)
                       lockHolder = Some(id)
                       bots.put(id, BotInfo(p,v,nxt,Nil))
                   }
+                
               case _ => 
                 val r = rand.nextDouble
                 if (r < 0.8){
@@ -122,7 +126,7 @@ class Controller(intents: SyncMap[BotID, Intent],
        }
 
 
-      println("lockholder = " + lockHolder)
+      //println("lockholder = " + lockHolder)
       //println("mailbox size = " + mailboxSize)
 
 
