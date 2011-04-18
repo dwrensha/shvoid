@@ -67,9 +67,13 @@ class Physics extends PApplet {
   val BOTDENSE = 5.0f;
   val BOTMASS = BOTLONG * BOTWIDE * BOTDENSE;
 
+  // conservatively estimate the polling cycle as half the frame time.
+  val EPS = 1f / (2f * targetFPS) 
+
   var controller: Controller = new Controller(intents, 
                                               MAXFORCE / BOTMASS, 
-                                              MAXBRAKE / BOTMASS)
+                                              MAXBRAKE / BOTMASS,
+                                              EPS)
 
   def trackFPS() = {
     frameNum += 1

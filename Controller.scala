@@ -9,7 +9,8 @@ import Types._
 
 class Controller(intents: SyncMap[BotID, Intent], 
                  MAX_A : Float, 
-                 MAX_B : Float) extends Actor {
+                 MAX_B : Float,
+                 EPS : Float) extends Actor {
 
   case class BotInfo(pos : Vec2,
                      vel : Vec2,
@@ -18,12 +19,17 @@ class Controller(intents: SyncMap[BotID, Intent],
                      )
 
 
+  val  rand = new scala.util.Random(System.currentTimeMillis())
 
   val bots : HashMap[BotID, BotInfo] = new HashMap[BotID,BotInfo]()
 
   val lanetails = Array(nobot,nobot,nobot, nobot)
 
   val intersection = new Vec2(0f,0f)
+
+  val FOLLOW_DISTANCE = 4f;
+
+  val INTERSECTION_DISTANCE = 6f;
 
 //  var intents : SyncMap[BotID, Intent] = it
   
@@ -57,8 +63,9 @@ class Controller(intents: SyncMap[BotID, Intent],
               case None => 
             }
 
-          case ('BotDone, id ) =>
+          case ('BotDone, id: BotID ) =>
             println("a bot reached its goal.")
+            bots.remove(id)
           case 'StepDone => 
             receivemore = false
           case msg => 
@@ -67,7 +74,38 @@ class Controller(intents: SyncMap[BotID, Intent],
         }
       }
 
+
+
       // Each car makes a decision about what to do.
+
+      for((id,BotInfo(p,v,nxt,obs)) <- bots) {
+        bots.get(nxt) match {
+          case Some(BotInfo(p1,v1,_,_)) 
+           if 2f * MAX_B * (p.sub(p1).length  - FOLLOW_DISTANCE ) < 
+               v.lengthSquared() - v1.lengthSquared() + 
+               (MAX_A + MAX_B) * (MAX_A * EPS * EPS + 2f * EPS * v.length)
+            => intents.put(id,(None,Some(Brake)))
+          case _ =>
+            obs match {
+              case List(ob) 
+                if 2f * MAX_B * (p.sub(ob).length - INTERSECTION_DISTANCE ) < 
+                  v.lengthSquared() + 
+                  (MAX_A + MAX_B) * (MAX_A * EPS * EPS + 2f * EPS * v.length)
+                => 
+                intents.put(id,(None,Some(Brake)))
+              case _ => 
+                val r = rand.nextDouble
+                if (r < 0.8){
+                  intents.put(id,(None,Some(Accel)))
+                } else if (r < 0.9) {
+                  intents.put(id,(None,None))
+                } else {
+                  intents.put(id,(None,Some(Brake)))
+                }
+
+            }            
+        }
+       }
 
 
       println("mailbox size = " + mailboxSize)
