@@ -59,10 +59,17 @@ class Physics extends PApplet {
 //    val maxspeed = 10.0f;
 //    val maxomega = 5.0f;
   val MAXFORCE = 15.0f;
-  val MAXBRAKE = 10.0f;
+  val MAXBRAKE = 15.0f;
   val MAXTORQUE = 5.0f;
 
-  var controller: Controller = new Controller(intents)
+  val BOTLONG = 1.5f;
+  val BOTWIDE = 1.0f;
+  val BOTDENSE = 5.0f;
+  val BOTMASS = BOTLONG * BOTWIDE * BOTDENSE;
+
+  var controller: Controller = new Controller(intents, 
+                                              MAXFORCE / BOTMASS, 
+                                              MAXBRAKE / BOTMASS)
 
   def trackFPS() = {
     frameNum += 1
@@ -79,9 +86,8 @@ class Physics extends PApplet {
 
     def makeBot(p: Vec2, v: Vec2, gl: Goal, theta:Float , omega: Float) : Int = {
       val sd: PolygonDef = new PolygonDef()
-      val a = 0.5f;
-      sd.setAsBox(1.5f * a, a)
-      sd.density = 5.0f
+      sd.setAsBox(0.5f * BOTLONG, 0.5f * BOTWIDE)
+      sd.density = BOTDENSE
       sd.restitution = 0.0f
       sd.friction = 0.5f
 
@@ -102,6 +108,7 @@ class Physics extends PApplet {
                                         System.currentTimeMillis()))
       intents.put(bid,(None,Some(Accel)))
        
+
       nextBotID+= 1
 
       return nextBotID - 1;
@@ -151,14 +158,15 @@ class Physics extends PApplet {
 
 
 
-        makeObstacle(new Vec2(-102.0f,-102.0f), 98.0f)
-        makeObstacle(new Vec2(-102.0f,102.0f), 98.0f)
+      makeObstacle(new Vec2(-102.0f,-102.0f), 98.0f)
+      makeObstacle(new Vec2(-102.0f,102.0f), 98.0f)
 
-        makeObstacle(new Vec2(102.0f,-102.0f), 98.0f)
-        makeObstacle(new Vec2(102.0f,102.0f), 98.0f)
+      makeObstacle(new Vec2(102.0f,-102.0f), 98.0f)
+      makeObstacle(new Vec2(102.0f,102.0f), 98.0f)
 
 
-        controller.start()
+//      controller = new Controller(intents, MAXFORCE, MAXBRAKE)
+      controller.start()
                                         
     }
     

@@ -7,7 +7,9 @@ import org.jbox2d.common.Vec2
 
 import Types._
 
-class Controller(intents: SyncMap[BotID, Intent] ) extends Actor {
+class Controller(intents: SyncMap[BotID, Intent], 
+                 MAX_A : Float, 
+                 MAX_B : Float) extends Actor {
 
   case class BotInfo(pos : Vec2,
                      vel : Vec2,
@@ -20,6 +22,8 @@ class Controller(intents: SyncMap[BotID, Intent] ) extends Actor {
   val bots : HashMap[BotID, BotInfo] = new HashMap[BotID,BotInfo]()
 
   val lanetails = Array(nobot,nobot,nobot, nobot)
+
+  val intersection = new Vec2(0f,0f)
 
 //  var intents : SyncMap[BotID, Intent] = it
   
@@ -44,7 +48,7 @@ class Controller(intents: SyncMap[BotID, Intent] ) extends Actor {
                 omega: Float,
                 lane : Int) =>
             println("a bot spawned.")
-            bots.put(id, BotInfo(p,v, lanetails(lane), Nil))
+            bots.put(id, BotInfo(p,v, lanetails(lane), List(intersection ) ))
             lanetails.update(lane, id)
           case ('BotUpdate, id: BotID, p: Vec2, v: Vec2) => 
             bots.get(id) match {
@@ -63,10 +67,10 @@ class Controller(intents: SyncMap[BotID, Intent] ) extends Actor {
         }
       }
 
-      // update
+      // Each car makes a decision about what to do.
 
 
-      //println(intents.size)
+      println("mailbox size = " + mailboxSize)
 
 
 
