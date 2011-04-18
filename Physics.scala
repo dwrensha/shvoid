@@ -259,7 +259,11 @@ class Physics extends PApplet {
             (new Vec2(-2f,-90f), 5f),
             (new Vec2(-90f,2f), 5f))
 
-  
+   val spawndelay = 120
+
+   val ticks = Array(spawndelay, spawndelay, spawndelay, spawndelay)
+
+
           
 
    val  rand = new scala.util.Random(System.currentTimeMillis())
@@ -269,16 +273,21 @@ class Physics extends PApplet {
      */ 
     def perhapsCreateBots() : Unit = {
 
-      if(rand.nextDouble < 0.03){
-        val i = rand.nextInt(4)
-        val spawn = spawnpoints(i)
-        val v = spawnvels(i)
-        val angle = spawnangles(i)
-        val gl = goals(i)
-        val omega = 0f;
-        val id = makeBot(spawn, v, gl, angle, omega )
-        controller ! (('BotSpawn, id, spawn, v, gl, angle, omega ))
-        
+      for(i <- ticks.indices){
+        if(ticks(i) > 0 ) {
+          ticks.update(i,ticks(i) - 1)
+        } else { 
+          if(rand.nextDouble < 0.01){
+            val spawn = spawnpoints(i)
+            val v = spawnvels(i)
+            val angle = spawnangles(i)
+            val gl = goals(i)
+            val omega = 0f;
+            val id = makeBot(spawn, v, gl, angle, omega )
+            controller ! (('BotSpawn, id, spawn, v, gl, angle, omega ))
+            ticks.update(i,spawndelay)
+          }
+        }
       }
 
 
