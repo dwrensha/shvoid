@@ -30,6 +30,18 @@ class StopSign extends Physics {
                                         EPS)
    super.setup()
   }
+}
+
+
+class SimpleReserver extends Physics {
+  override def setup() {
+    println("in simplereserver")
+    controller = new SimpleReserverController(intents, 
+                                              MAXFORCE / BOTMASS, 
+                                              MAXBRAKE / BOTMASS,
+                                              EPS)
+   super.setup()
+  }
 
 
 }

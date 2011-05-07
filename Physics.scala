@@ -264,11 +264,13 @@ class Physics extends PApplet {
    ****  ****
    **** 0****
   */
+   val LANE_OFFSET = 1.5f
+
     val spawnpoints = 
-      Array(new Vec2(2f,-90f),
-            new Vec2(-90f,-2f),
-            new Vec2(-2f,90f),
-            new Vec2(90f,2f))
+      Array(new Vec2(LANE_OFFSET,-90f),
+            new Vec2(-90f,-LANE_OFFSET),
+            new Vec2(-LANE_OFFSET,90f),
+            new Vec2(90f,LANE_OFFSET))
 
     val spawnvels = 
       Array(new Vec2(0f,5f),
@@ -284,10 +286,10 @@ class Physics extends PApplet {
       )
 
     val goals = 
-      Array((new Vec2(2f,90f), 5.0f),
-            (new Vec2(90f,-2f), 5f),
-            (new Vec2(-2f,-90f), 5f),
-            (new Vec2(-90f,2f), 5f))
+      Array((new Vec2(LANE_OFFSET,90f), 5.0f),
+            (new Vec2(90f,-LANE_OFFSET), 5f),
+            (new Vec2(-LANE_OFFSET,-90f), 5f),
+            (new Vec2(-90f,LANE_OFFSET), 5f))
 
    val spawndelay = 120
 
