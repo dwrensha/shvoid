@@ -79,6 +79,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 //  var intents : SyncMap[BotID, Intent] = it
   
   
+  def square(x: Float): Float = {x * x}
 
   def canMakeReservation(rx1:Float,rx2:Float,rt1:Float,rt2:Float,x0:Float,v0:Float, t0:Float) : Boolean = {
     val l1 = rx1 - x0
@@ -100,10 +101,47 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
       }
     }
 
+    // See if we even need to worry about the first gate
+
+    if ( 0.5f * MAX_A * dt1 * dt1 + v0 * dt1 < l1  ) {  // we can't make it 
+      // so we might as well floor it.
+      if(0.5f * MAX_A * dt2 * dt2 + v0 * dt1 >= l2) {
+        return true
+      } else {
+        return false
+      }
+      
+    } 
 
     // ok, we can avoid getting there too soon. can we cross the second gate before it closes?
+    val remainingtime = dt1 - stoptime
+    val tbg = dt2-dt1 // time between gates
 
-    return true
+    if (0.5f * (v0 * stoptime + remainingtime * remainingtime * MAX_A )  < l1 ){ //If we stop, we're not there for the gate's opening
+      val floorItTime = (dt1 * ( MAX_A + MAX_B) + scala.math.sqrt( square(dt1 * (MAX_A + MAX_B) ) - (MAX_A + MAX_B) *(MAX_A * dt1*dt1 + v0*dt1 - l1)    )   )   / (MAX_A + MAX_B)
+      val openVel = v0 - MAX_B *  floorItTime +  MAX_A * (rt1 - floorItTime)
+
+      val finishX = 0.5f * MAX_A * tbg * tbg + openVel * tbg + l1
+      if (finishX > l2){
+        return true
+      } else {
+        return false
+      }
+    } else { // strategy: stop, then accelerate at the last possible instant to get there in time for gate's opening.
+      val remainingX = l1 - stoptime * v0
+      val floorItTime = scala.math.sqrt(2f * remainingX / MAX_A)
+      val openVel = MAX_A * (dt1 - floorItTime)
+      
+      val finishX = 0.5f * MAX_A * tbg * tbg + openVel * tbg + l1
+      if (finishX > l2){
+        return true
+      } else {
+        return false
+      }
+
+    }
+    
+
 
   }
 
