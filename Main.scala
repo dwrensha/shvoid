@@ -8,7 +8,7 @@ object Main {
     println("Main args = " + args)
 //    val p = new Physics()
 //    PApplet.runSketch(args, p)
-    PApplet.main(Array[String] { "Physics" })
+    PApplet.main(Array[String] { args(0) })
     println("goodbye")
   }
 }
