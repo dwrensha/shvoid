@@ -48,10 +48,14 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
                                MAX_B : Float,
                                EPS : Float) extends Actor {
 
+  type Time = Float
+  type Reservation = (Time,Time) // Start time and length
+
   case class BotInfo(pos : Vec2,
                      vel : Vec2,
                      next: BotID, //  next car
-                     obs : List[Vec2] //position of obstacles to avoid
+                     obs : List[Vec2], //position of obstacles to avoid
+                     res : Option[Reservation]
                      )
 
 
@@ -62,12 +66,14 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
   val lanetails = Array(nobot,nobot,nobot, nobot)
 
   val intersection = new Vec2(0f,0f)
+  
+
+
   var lockHolder : Option[BotID]= None
 
   var simulationTime = 0f
 
-  type Time = Float
-  type Reservation = (Time,Time) // Start time and length
+
 
   val reservations : Array[List[Reservation]] = Array(Nil,Nil,Nil,Nil)
 
@@ -147,7 +153,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
 
   def act() : Unit = {
-    println("hello from controller")
+    println("hello from SimpleReserver controller")
 
     var receivemore : Boolean = true
 
@@ -165,12 +171,12 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
                 omega: Float,
                 lane : Int) =>
             println("a bot spawned.")
-            bots.put(id, BotInfo(p,v, lanetails(lane), List(intersection ) ))
+            bots.put(id, BotInfo(p,v, lanetails(lane), List(intersection ), None ))
             lanetails.update(lane, id)
           case ('BotUpdate, id: BotID, p: Vec2, v: Vec2) => 
             bots.get(id) match {
-              case Some(BotInfo(p0,v0,n0,obs0)) =>
-                bots.put(id,BotInfo(p,v,n0,obs0))
+              case Some(BotInfo(p0,v0,n0,obs0,r)) =>
+                bots.put(id,BotInfo(p,v,n0,obs0,r))
               case None => 
             }
 
@@ -191,7 +197,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
       // Each car makes a decision about what to do.
 
-      for((id,BotInfo(p,v,nxt,obs)) <- bots) {
+      for((id,BotInfo(p,v,nxt,obs,r)) <- bots) {
         if(lockHolder == Some(id) 
            && v.length() > 0.1f
            &&  Vec2.dot(p.sub(intersection),v) > 0f 
@@ -200,7 +206,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
            }
 
         bots.get(nxt) match {
-          case Some(BotInfo(p1,v1,_,_)) 
+          case Some(BotInfo(p1,v1,_,_,_)) 
            if 2f * MAX_B * (p.sub(p1).length  - FOLLOW_DISTANCE ) < 
                v.lengthSquared() - v1.lengthSquared() + 
                (MAX_A + MAX_B) * (MAX_A * EPS * EPS + 2f * EPS * v.length)
@@ -219,7 +225,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
                     case None =>
                       println("GRABBING LOCK. " + id)
                       lockHolder = Some(id)
-                      bots.put(id, BotInfo(p,v,nxt,Nil))
+                      bots.put(id, BotInfo(p,v,nxt,Nil,r ))
                   }
                 
               case _ => 
@@ -245,6 +251,8 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
 
   }
+
+
 
 
 }

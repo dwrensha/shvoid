@@ -19,11 +19,10 @@ import processing.core.PConstants._
 
 import Types._
 import PhysicsTypes._
-
+import Lanes._
 
 class Physics extends PApplet {
 
-    val pi = 3.14159265f
     val zerovec = new Vec2(0f,0f)
 
     var shiftKey = false
@@ -260,43 +259,6 @@ class Physics extends PApplet {
       return
     }
     
-
-  /****2 ****
-   ****  ****
-   ****  ****
-            3
-   1
-   ****  ****
-   ****  ****
-   **** 0****
-  */
-   val LANE_OFFSET = 1.5f
-
-    val spawnpoints = 
-      Array(new Vec2(LANE_OFFSET,-90f),
-            new Vec2(-90f,-LANE_OFFSET),
-            new Vec2(-LANE_OFFSET,90f),
-            new Vec2(90f,LANE_OFFSET))
-
-    val spawnvels = 
-      Array(new Vec2(0f,5f),
-            new Vec2(5f,0f),
-            new Vec2(0f,-5f),
-            new Vec2(-5f,0f))
-
-    val spawnangles = 
-      Array(pi / 2.0f,
-            0f,
-            3f * pi / 2f,
-            pi
-      )
-
-    val goals = 
-      Array((new Vec2(LANE_OFFSET,90f), 5.0f),
-            (new Vec2(90f,-LANE_OFFSET), 5f),
-            (new Vec2(-LANE_OFFSET,-90f), 5f),
-            (new Vec2(-90f,LANE_OFFSET), 5f))
-
    val spawndelay = 120
 
    val ticks = Array(spawndelay, spawndelay, spawndelay, spawndelay)
@@ -331,6 +293,8 @@ class Physics extends PApplet {
 
       return();
     }
+
+
 
 
 
