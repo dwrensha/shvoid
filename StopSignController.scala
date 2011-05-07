@@ -7,10 +7,10 @@ import org.jbox2d.common.Vec2
 
 import Types._
 
-class Controller(intents: SyncMap[BotID, Intent], 
-                 MAX_A : Float, 
-                 MAX_B : Float,
-                 EPS : Float) extends Actor {
+class StopSignController(intents: SyncMap[BotID, Intent], 
+                         MAX_A : Float, 
+                         MAX_B : Float,
+                         EPS : Float) extends Actor {
 
   case class BotInfo(pos : Vec2,
                      vel : Vec2,

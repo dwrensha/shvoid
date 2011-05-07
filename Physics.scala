@@ -70,10 +70,13 @@ class Physics extends PApplet {
   // conservatively estimate the polling cycle as half the frame time.
   val EPS = 1f / (2f * targetFPS) 
 
-  var controller: Controller = new Controller(intents, 
-                                              MAXFORCE / BOTMASS, 
-                                              MAXBRAKE / BOTMASS,
-                                              EPS)
+  var controller: scala.actors.Actor = 
+    new Controller(intents, 
+                   MAXFORCE / BOTMASS, 
+                   MAXBRAKE / BOTMASS,
+                   EPS)
+
+  println("args = " + args)
 
   def trackFPS() = {
     frameNum += 1
@@ -134,8 +137,9 @@ class Physics extends PApplet {
     }
 
 
-
+  // hmm... apparently this gets called twice?
     override def setup() {
+        println("setting up")
     	size(800,600,P3D)
     	frameRate(targetFPS)
     	dd = new ProcessingDebugDraw(this)

@@ -130,6 +130,8 @@ public class Visualizer extends PApplet {
         body.createShape(sd);
         body.setMassFromShapes();
         
+
+        //        this.openStream("what");
                                         
     }
     
