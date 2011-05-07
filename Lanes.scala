@@ -16,12 +16,13 @@ object Lanes {
    **** 0****
   */
    val LANE_OFFSET = 1.5f
+   val LANE_START = 90f
 
     val spawnpoints = 
-      Array(new Vec2(LANE_OFFSET,-90f),
-            new Vec2(-90f,-LANE_OFFSET),
-            new Vec2(-LANE_OFFSET,90f),
-            new Vec2(90f,LANE_OFFSET))
+      Array(new Vec2(LANE_OFFSET,-LANE_START),
+            new Vec2(-LANE_START,-LANE_OFFSET),
+            new Vec2(-LANE_OFFSET,LANE_START),
+            new Vec2(LANE_START,LANE_OFFSET))
 
     val spawnvels = 
       Array(new Vec2(0f,5f),
@@ -37,26 +38,51 @@ object Lanes {
       )
 
     val goals = 
-      Array((new Vec2(LANE_OFFSET,90f), 5.0f),
-            (new Vec2(90f,-LANE_OFFSET), 5f),
-            (new Vec2(-LANE_OFFSET,-90f), 5f),
-            (new Vec2(-90f,LANE_OFFSET), 5f))
+      Array((new Vec2(LANE_OFFSET,LANE_START), 5.0f),
+            (new Vec2(LANE_START,-LANE_OFFSET), 5f),
+            (new Vec2(-LANE_OFFSET,-LANE_START), 5f),
+            (new Vec2(-LANE_START,LANE_OFFSET), 5f))
 
 
+  /****2 ****
+   ****  ****
+   ****  ****
+            3
+   1
+   ****  ****
+   ****  ****
+   **** 0****
+  */
 
 
-
-  def world2lane(worldVec: Vec2, laneNum: Int) : Float = {
+  def world2lane(v: Vec2, laneNum: Int) : Float = {
     laneNum match {
       case 0 => 
+        v.y
+      case 1 => 
+        v.x
+      case 2 => 
+        -v.y
+      case 3 => 
+        -v.x
       case _ => 
-          
+        throw new Error("bad lane number: " + laneNum)
     }
-    return 0f;
   }
 
   def land2world(laneX : Float, laneNum: Int) : Vec2 = {
-    return new Vec2(0f,0f)
+    laneNum match {
+      case 0 => 
+        new Vec2(LANE_OFFSET,  laneX )
+      case 1 => 
+        new Vec2(laneX, -LANE_OFFSET)
+      case 2 => 
+        new Vec2(-LANE_OFFSET,  -laneX )
+      case 3 => 
+        new Vec2(-laneX, LANE_OFFSET)
+      case _ => 
+        throw new Error("bad lane number: " + laneNum)
+    }
   }
 
 
