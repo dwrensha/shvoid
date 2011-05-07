@@ -6,6 +6,7 @@ import scala.actors.Actor._
 import org.jbox2d.common.Vec2
 
 import Types._
+import Lanes._
 
 
 /*
@@ -54,12 +55,12 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
   case class BotInfo(pos : Vec2,
                      vel : Vec2,
                      next: BotID, //  next car
-                     obs : List[Vec2], //position of obstacles to avoid
+                     lane : Int, // lane
                      res : Option[Reservation]
                      )
 
 
-  val  rand = new scala.util.Random(System.currentTimeMillis())
+  val rand = new scala.util.Random(System.currentTimeMillis())
 
   val bots : HashMap[BotID, BotInfo] = new HashMap[BotID,BotInfo]()
 
@@ -67,8 +68,6 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
   val intersection = new Vec2(0f,0f)
   
-
-
   var lockHolder : Option[BotID]= None
 
   var simulationTime = 0f
@@ -84,10 +83,93 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
 //  var intents : SyncMap[BotID, Intent] = it
   
+
+  def act() : Unit = {
+    println("hello from SimpleReserver controller")
+
+    var receivemore : Boolean = true
+
+    while(true) {
+
+      // get everything from a single step
+      receivemore = true
+      while(receivemore){
+        receive {
+          case ('BotSpawn, 
+                id: BotID, 
+                p : Vec2, 
+                v : Vec2, 
+                angle: Float,
+                omega: Float,
+                lane : Int) =>
+            println("a bot spawned.")
+            bots.put(id, BotInfo(p,v, lanetails(lane), lane, None ))
+            lanetails.update(lane, id)
+          case ('BotUpdate, id: BotID, p: Vec2, v: Vec2) => 
+            bots.get(id) match {
+              case Some(BotInfo(p0,v0,n0,ln,r)) =>
+                bots.put(id,BotInfo(p,v,n0,ln,r))
+              case None => 
+            }
+
+          case ('BotDone, id: BotID ) =>
+            println("a bot reached its goal.")
+            bots.remove(id)
+          case 'StepDone => 
+            receivemore = false
+          case ('Time, t: Float) => 
+            simulationTime = t
+          case msg => 
+            println("got message: " + msg)
+            
+        }
+      }
+
+
+
+      // Each car makes a decision about what to do.
+
+      for((id,BotInfo(p,v,nxt,ln,r)) <- bots) {
+        r match {
+          case None => // we need to make a reservation
+            bots.get(nxt) match {
+              case Some(BotInfo(_,_,_,_,Some(nr))) => // bot in front of us has a reservation.
+              case _ => 
+            }
+          case Some((t1,t2)) =>
+        }
+      }
+
+      //println("lockholder = " + lockHolder)
+      //println("mailbox size = " + mailboxSize)
+
+
+
+    }
+
+
+  }
+
+  val GATE1 = -4f
+  val GATE2 = 4f
+
+  // all of this in lane coordinates
+  def makeReservation(x0 : Float, v0 : Float, t0 : Float, laneNum : Int) : Option[Reservation] = {
+    
+    if(x0 > GATE1){ // we're already too late
+      return None
+    }
+
+    
+
+    return None
+
+  }
+  
   
   def square(x: Float): Float = {x * x}
 
-  def canMakeReservation(rx1:Float,rx2:Float,rt1:Float,rt2:Float,x0:Float,v0:Float, t0:Float) : Boolean = {
+  def canDoReservation(rx1:Float,rx2:Float,rt1:Float,rt2:Float,x0:Float,v0:Float, t0:Float) : Boolean = {
     val l1 = rx1 - x0
     val l2 = rx2 - x0
     val dt1 = rt1 - t0
@@ -147,108 +229,6 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
     }
     
-
-
-  }
-
-
-  def act() : Unit = {
-    println("hello from SimpleReserver controller")
-
-    var receivemore : Boolean = true
-
-    while(true) {
-
-      // get everything from a single step
-      receivemore = true
-      while(receivemore){
-        receive {
-          case ('BotSpawn, 
-                id: BotID, 
-                p : Vec2, 
-                v : Vec2, 
-                angle: Float,
-                omega: Float,
-                lane : Int) =>
-            println("a bot spawned.")
-            bots.put(id, BotInfo(p,v, lanetails(lane), List(intersection ), None ))
-            lanetails.update(lane, id)
-          case ('BotUpdate, id: BotID, p: Vec2, v: Vec2) => 
-            bots.get(id) match {
-              case Some(BotInfo(p0,v0,n0,obs0,r)) =>
-                bots.put(id,BotInfo(p,v,n0,obs0,r))
-              case None => 
-            }
-
-          case ('BotDone, id: BotID ) =>
-            println("a bot reached its goal.")
-            bots.remove(id)
-          case 'StepDone => 
-            receivemore = false
-          case ('Time, t: Float) => 
-            simulationTime = t
-          case msg => 
-            println("got message: " + msg)
-            
-        }
-      }
-
-
-
-      // Each car makes a decision about what to do.
-
-      for((id,BotInfo(p,v,nxt,obs,r)) <- bots) {
-        if(lockHolder == Some(id) 
-           && v.length() > 0.1f
-           &&  Vec2.dot(p.sub(intersection),v) > 0f 
-           && p.sub(intersection).length > RELEASE_LOCK_DISTANCE){
-             lockHolder = None
-           }
-
-        bots.get(nxt) match {
-          case Some(BotInfo(p1,v1,_,_,_)) 
-           if 2f * MAX_B * (p.sub(p1).length  - FOLLOW_DISTANCE ) < 
-               v.lengthSquared() - v1.lengthSquared() + 
-               (MAX_A + MAX_B) * (MAX_A * EPS * EPS + 2f * EPS * v.length)
-            => intents.put(id,(None,Some(Brake)))
-          case _ =>
-             obs match {
-              case List(ob)
-                if 
-                  2f * MAX_B * (p.sub(ob).length - INTERSECTION_DISTANCE ) < 
-                  v.lengthSquared() + 
-                  (MAX_A + MAX_B) * (MAX_A * EPS * EPS + 2f * EPS * v.length)
-                =>
-                  lockHolder match {
-                    case Some(_) => 
-                      intents.put(id,(None,Some(Brake)))
-                    case None =>
-                      println("GRABBING LOCK. " + id)
-                      lockHolder = Some(id)
-                      bots.put(id, BotInfo(p,v,nxt,Nil,r ))
-                  }
-                
-              case _ => 
-                val r = rand.nextDouble
-                if (r < 0.8){
-                  intents.put(id,(None,Some(Accel)))
-                } else if (r < 0.9) {
-                  intents.put(id,(None,None))
-                } else {
-                  intents.put(id,(None,Some(Brake)))
-                }
-
-            }            
-        }
-        }
-
-      //println("lockholder = " + lockHolder)
-      //println("mailbox size = " + mailboxSize)
-
-
-
-    }
-
 
   }
 
