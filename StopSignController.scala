@@ -113,9 +113,9 @@ class StopSignController(intents: SyncMap[BotID, Intent],
                 
               case _ => 
                 val r = rand.nextDouble
-                if (r < 0.8){
+                if (r < 0.99){
                   intents.put(id,(None,Some(Accel)))
-                } else if (r < 0.9) {
+                } else if (r < 0.999) {
                   intents.put(id,(None,None))
                 } else {
                   intents.put(id,(None,Some(Brake)))

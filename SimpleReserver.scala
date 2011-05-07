@@ -8,6 +8,10 @@ import org.jbox2d.common.Vec2
 import Types._
 
 
+/*
+ * Lane numbers and lock numbers.
+  */
+
   /****2 ****
    ****  ****
    ****  ****

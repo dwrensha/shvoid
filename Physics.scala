@@ -100,7 +100,7 @@ class Physics extends PApplet {
 
       val bd: BodyDef = new BodyDef()
       bd.position.set(p)
-      bd.linearDamping = 0.1f
+      bd.linearDamping = 0.0f
       bd.angularDamping = 0.5f
       bd.angle = theta
       val body: Body = world.createBody(bd)
