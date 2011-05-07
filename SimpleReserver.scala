@@ -129,11 +129,17 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
       // Each car makes a decision about what to do.
 
-      for((id,BotInfo(p,v,nxt,ln,r)) <- bots) {
+      for((id,BotInfo(wp,wv,nxt,ln,r)) <- bots) {
+        val x = world2lane(wp,ln)
+        val v = world2lane(wv, ln)
         r match {
           case None => // we need to make a reservation
             bots.get(nxt) match {
-              case Some(BotInfo(_,_,_,_,Some(nr))) => // bot in front of us has a reservation.
+              case Some(BotInfo(_,_,_,_,Some((t1,t2)))) => // bot in front of us has a reservation.
+                makeReservation(x,v,t2,ln) match {
+                  case Some(res) => bots.put(id,BotInfo(wp,wv,nxt,ln,Some(res)))
+                  case None => 
+                }
               case _ => 
             }
           case Some((t1,t2)) =>
@@ -142,7 +148,6 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
       //println("lockholder = " + lockHolder)
       //println("mailbox size = " + mailboxSize)
-
 
 
     }
@@ -154,12 +159,15 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
   val GATE2 = 4f
 
   // all of this in lane coordinates
-  def makeReservation(x0 : Float, v0 : Float, t0 : Float, laneNum : Int) : Option[Reservation] = {
+  def makeReservation(x0 : Float, v0 : Float, afterT : Float, laneNum : Int) : Option[Reservation] = {
     
     if(x0 > GATE1){ // we're already too late
       return None
     }
 
+    /*  Find an open slot after afterT that we can get to.
+     *
+  */
     
 
     return None
