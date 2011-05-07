@@ -39,6 +39,8 @@ class Physics extends PApplet {
     var frameNum = 0
     var startTime : Long = System.currentTimeMillis()
 
+    var simulationTime: Float = 0f
+
     /** Drawing handler to use. */
     var dd: DebugDraw = null
 
@@ -244,10 +246,14 @@ class Physics extends PApplet {
       }
       
       controller ! 'StepDone
+      controller ! ('Time, simulationTime)
 
       // draw it and step.
       background(0)
-      world.step(1.0f / targetFPS, 8)
+      val timestep = 1.0f / targetFPS
+      world.step(timestep, 8)
+      simulationTime += timestep
+      
 
 
       dd.drawString(5, 30, "FPS: " + avgFPS ,new Color3f(255.0f,255.0f,255.0f))

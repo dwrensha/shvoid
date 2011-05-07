@@ -25,8 +25,14 @@ class StopSignController(intents: SyncMap[BotID, Intent],
 
   val lanetails = Array(nobot,nobot,nobot, nobot)
 
+
+
   val intersection = new Vec2(0f,0f)
   var lockHolder : Option[BotID]= None
+
+  
+  var simulationTime = 0f
+
 
 
   val FOLLOW_DISTANCE = 4f;
@@ -70,6 +76,8 @@ class StopSignController(intents: SyncMap[BotID, Intent],
             bots.remove(id)
           case 'StepDone => 
             receivemore = false
+          case ('Time, t: Float) => 
+            simulationTime = t
           case msg => 
             println("got message: " + msg)
             

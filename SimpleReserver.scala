@@ -64,6 +64,13 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
   val intersection = new Vec2(0f,0f)
   var lockHolder : Option[BotID]= None
 
+  var simulationTime = 0f
+
+  type Time = Float
+  type Reservation = (Time,Time) // Start time and length
+
+  val reservations : Array[List[Reservation]] = Array(Nil,Nil,Nil,Nil)
+
 
   val FOLLOW_DISTANCE = 4f;
   val INTERSECTION_DISTANCE = 6f;
@@ -72,6 +79,34 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 //  var intents : SyncMap[BotID, Intent] = it
   
   
+
+  def canMakeReservation(rx1:Float,rx2:Float,rt1:Float,rt2:Float,x0:Float,v0:Float, t0:Float) : Boolean = {
+    val l1 = rx1 - x0
+    val l2 = rx2 - x0
+    val dt1 = rt1 - t0
+    val dt2 = rt2 - t0
+    val stoptime = v0 / MAX_B
+
+
+    // See if we can avoid getting there too soon.
+
+    if(stoptime < rt1) { // we can stop before our reservation time
+      if( 0.5f * v0 * stoptime > l1) { // we've passed the gate by the time we've stopped
+        return false
+      }
+    } else { 
+      if (-0.5f * MAX_B * dt1 * dt1 + v0 * dt1 > l1  ) { // we've passed the gate 
+        return false
+      }
+    }
+
+
+    // ok, we can avoid getting there too soon. can we cross the second gate before it closes?
+
+    return true
+
+  }
+
 
   def act() : Unit = {
     println("hello from controller")
@@ -106,6 +141,8 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
             bots.remove(id)
           case 'StepDone => 
             receivemore = false
+          case ('Time, t: Float) => 
+            simulationTime = t
           case msg => 
             println("got message: " + msg)
             
