@@ -132,9 +132,14 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
       // Each car makes a decision about what to do.
 
       for((id,BotInfo(wp,wv,nxt,ln,r)) <- bots) {
+        println("-------------------")
         println("on car: " + id)
+        println("current intent = " + intents.get(id))
+        println("simulation time = " + simulationTime)
         val x = world2lane(wp,ln)
         val v = world2lane(wv, ln)
+        println("x = " + x)
+        println("v = " + v)
         if (x < GATE1) {
           var myres : Reservation = null
           r match {
@@ -180,6 +185,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
           }
 
         } else { // this car has passed the intersection
+          
 
           intents.put(id,(None,Some(Accel)))
         }
@@ -354,10 +360,13 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
     // See if we even need to worry about the first gate
 
     if ( 0.5f * MAX_A * dt1 * dt1 + v0 * dt1 < l1  ) {  // we can't make it 
+      println("we might as well floor it.")
+
       // so we might as well floor it.
       if(0.5f * MAX_A * dt2 * dt2 + v0 * dt1 >= l2) {
         return true
       } else {
+        println("we can't even make it then!")
         return false
       }
       

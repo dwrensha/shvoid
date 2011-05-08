@@ -69,7 +69,7 @@ class Physics extends PApplet {
   val BOTMASS = BOTLONG * BOTWIDE * BOTDENSE;
 
   // conservatively estimate the polling cycle as half the frame time.
-  val EPS = 1f / (2f * targetFPS) 
+  val EPS = 2f / ( targetFPS) 
 
   var controller: scala.actors.Actor = 
     new Controller(intents, 
