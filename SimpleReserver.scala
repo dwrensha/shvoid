@@ -50,7 +50,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
                                EPS : Float) extends Actor {
 
   type Time = Float
-  type Reservation = (Time,Time) // Start time and length
+  type Reservation = (Time,Time) // Start time and end time
 
   case class BotInfo(pos : Vec2,
                      vel : Vec2,
@@ -164,6 +164,30 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
     if(x0 > GATE1){ // we're already too late
       return None
     }
+
+    val (ln1,ln2) = lane2tiles(laneNum)
+    
+    var prevs1: List[Reservation] = Nil
+    var prevs2: List[Reservation] = Nil
+    var nexts1: List[Reservation] = reservations(ln1)
+    var nexts2: List[Reservation] = reservations(ln2)
+    var newres : Option[Reservation] = None
+    while((! nexts1.isEmpty) && 
+          nexts1.head._2 < afterT){
+      prevs1 = nexts1.head :: prevs1
+      nexts1 = nexts1.tail
+    }
+
+    while((! nexts2.isEmpty) && 
+          nexts2.head._2 < afterT){
+      prevs2 = nexts2.head :: prevs1
+      nexts2 = nexts2.tail
+    }
+
+      newres = Some((1f,2f))
+
+
+
 
     /*  Find an open slot after afterT that we can get to.
      *

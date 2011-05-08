@@ -88,5 +88,31 @@ object Lanes {
   }
 
 
+  /****2 ****
+   ****  ****
+   ****  ****
+       23   3
+   1   10
+   ****  ****
+   ****  ****
+   **** 0****
+  */
+
+  def lane2tiles(laneNum : Int) : (Int,Int) = {
+    laneNum match {
+      case 0 => 
+        (0,3)
+      case 1 => 
+        (1,0)
+      case 2 => 
+        (2,1)
+      case 3 => 
+        (3,2)
+      case _ => 
+        throw new Error("bad lane number: " + laneNum)
+    }
+  }
+
+
 
 }
