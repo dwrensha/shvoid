@@ -183,40 +183,37 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
     var looksok = true
     var nextPlausible = currentT
     while(newres.isEmpty){
-      if( (! nexts1.isEmpty) &&
-          nexts1.head._1 <= currentT &&
-          nexts1.head._2 >= currentT 
-       ) {
-        looksok = false
-        nextPlausible = nexts1.head._2 + RES_EPS
+      val t1 = currentT
+      val t2 = t1 + 2.0f // TODO 
+      findConflict(nexts1,nexts2,(t1,t2)) match {
+        case None =>  
+          newres = Some((t1,t2))
+        case Some(tconflict) => 
+          currentT = tconflict + RES_EPS
       }
-
-      if( (! nexts2.isEmpty) &&
-          nexts2.head._1 <= currentT &&
-          nexts2.head._2 >= currentT 
-       ) {
-        looksok = false
-        nextPlausible = scala.math.max(nexts1.head._2 + RES_EPS, nextPlausible)
-      }
-
-      
-
-
     }
-
-      newres = Some((1f,2f))
-
+    val r = newres.get
 
 
-
-    /*  Find an open slot after afterT that we can get to.
-     *
-  */
+    reservations.update(ln1,insertReservation(reservations(ln1), r))
+    reservations.update(ln2,insertReservation(reservations(ln2), r))
 
 
-    return None
+
+    return Some(r)
 
   }
+
+  def insertReservation(lst: List[Reservation], r: Reservation) : List[Reservation] = {
+    var prevs: List[Reservation] = Nil
+    var nexts: List[Reservation] = lst
+    
+    val r1 = shiftUntil(prevs, nexts, r._1)
+
+    r1._1.reverse ++ List(r) ++ r1._2
+    
+  }
+
 
   // return None if this works, otherwise, give a new starting time to try.
   def findConflict(lst1 : List[Reservation], lst2: List[Reservation], r: Reservation) : Option[Float] = {
