@@ -24,10 +24,10 @@ import Lanes._
 
 class Physics extends PApplet {
 
+ 
+
     val zerovec = new Vec2(0f,0f)
 
-    var shiftKey = false
-    
     /** Was the mouse down last frame? */
     var pmousePressed = false
     
@@ -44,6 +44,8 @@ class Physics extends PApplet {
     var startTime : Long = System.currentTimeMillis()
 
     var simulationTime: Float = 0f
+
+    val lock : Object = new Object()
 
     /** Drawing handler to use. */
     var dd: DebugDraw = null
@@ -263,8 +265,10 @@ class Physics extends PApplet {
 
       dd.drawString(5, 30, "FPS: " + avgFPS , new Color3f(255.0f,255.0f,255.0f))
       dd.drawString(5, 42, "simulation time: " +  simulationTime, new Color3f(255.0f,255.0f,255.0f))
+      
       dd.drawString(5, 54, "spawn delay: " +  spawnDelay, new Color3f(255.0f,255.0f,255.0f))
       dd.drawString(5, 66, "spawn probability (per frame): " +  spawnProb, new Color3f(255.0f,255.0f,255.0f))
+
       return
     }
     
@@ -310,28 +314,19 @@ class Physics extends PApplet {
     /*
      * Do I have to worry about thread safety here?
   */ 
-    override def keyPressed(e: java.awt.event.KeyEvent) = {
-      var (t,a) = intents.getOrElse(0,(None,None))
+    override def keyPressed() = {
       if(keyCode == UP) {
            spawnProb *= 1.25
       } else if(keyCode == DOWN) {
            spawnProb *= 0.8
-      } else {
-        a = None
-      }
-
-      if(keyCode == LEFT) {
-           t = Some(TurnLeft)
-      } else if(keyCode == RIGHT) {
-           t = Some(TurnRight)
-      } else {
-        t = None
-      }
-
+      } else if(keyCode == LEFT) {
+           spawnDelay -= 5
+      }  else if(keyCode == RIGHT) {
+           spawnDelay += 5
+      }  
 
 
     }
-
 
 
 }
