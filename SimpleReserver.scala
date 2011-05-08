@@ -140,10 +140,21 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
                   case Some(res) => bots.put(id,BotInfo(wp,wv,nxt,ln,Some(res)))
                   case None => 
                 }
+              case None => 
+                makeReservation(x,v, 0f ,ln) match { // XXX
+                  case Some(res) => bots.put(id,BotInfo(wp,wv,nxt,ln,Some(res)))
+                  case None => 
+                }
               case _ => 
+                
             }
           case Some((t1,t2)) =>
         }
+
+        // see if it's safe to accelerate. if so, do it. else:
+        // see if it's safe to coast. if so, do it. else: 
+        // see if it's safe to brake. if so, do it. else: CATASTROPHE
+
       }
 
       //println("lockholder = " + lockHolder)
@@ -187,6 +198,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
       val t2 = t1 + 2.0f // TODO 
       findConflict(nexts1,nexts2,(t1,t2)) match {
         case None =>  
+          // XXX need to check that we can actually get there.
           newres = Some((t1,t2))
         case Some(tconflict) => 
           currentT = tconflict + RES_EPS
