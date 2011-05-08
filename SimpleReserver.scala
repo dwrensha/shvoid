@@ -181,6 +181,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
                            - 0.5f * MAX_B * EPS * EPS + v * EPS + x , 
                            v - MAX_B * EPS, simulationTime + EPS) match {
             case TooSoon => // catastrophe
+              println("We're going too fast!")
             case TooLate => 
               canDoReservation(GATE1,GATE2, t1, t2,   
                                v * EPS + x , 
@@ -256,11 +257,13 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
     while(newres.isEmpty){
       val t1 = currentT
       // calculate t2. be a bit conservative.
-//      val myA = (0.8f * MAX_A)
+      // assume that I accelerate for most of the distance.  Vi^2 + 2ax = Vf^2
+      val myA = (0.8f * MAX_A)
       val dx = GATE1 - x0
+      val arriveV = scala.math.sqrt(2f * myA * dx + v0 * v0).asInstanceOf[Float]
       val dt =  (t1 - simulationTime)      
-      val avgV = dx / dt
-      val t2 = t1 +    2f * ( GATE2 - GATE1) / (avgV)
+//      val avgV = dx / dt
+      val t2 = t1 +    2f * ( GATE2 - GATE1) / (arriveV)
       if (0.5f * MAX_A * dt * dt + v0 * dt + x0 < GATE1){ 
         currentT += 0.2f
       } else {
@@ -281,6 +284,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
 
     println("reservation made: " + r)
+    println("in lanes: " + ln1 + "," + ln2)
     return Some(r)
 
   }
