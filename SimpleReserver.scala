@@ -135,54 +135,53 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
         println("on car: " + id)
         val x = world2lane(wp,ln)
         val v = world2lane(wv, ln)
-        var myres : Reservation = null
-        r match {
-          case None => // we need to make a reservation
-            bots.get(nxt) match {
-              case Some(BotInfo(_,_,_,_,Some((t1,t2)))) => // bot in front of us has a reservation.
-                makeReservation(x,v,t2,ln) match {
-                  case Some(res) => 
-                    bots.put(id,BotInfo(wp,wv,nxt,ln,Some(res)))
-                    myres = res
-                  case None => 
-                }
-              case None => 
-                makeReservation(x,v, simulationTime ,ln) match { // XXX could put something here smarter than "simulationTime"
-                  case Some(res) => bots.put(id,BotInfo(wp,wv,nxt,ln,Some(res)))
-                    myres = res
-                  case None => 
-                }
-              case _ => 
-                
-            }
-          case Some((t1,t2)) =>
-            myres = (t1,t2)
-        }
-        val (t1,t2) = myres
+        if (x < GATE1) {
+          var myres : Reservation = null
+          r match {
+            case None => // we need to make a reservation
+              bots.get(nxt) match {
+                case Some(BotInfo(_,_,_,_,Some((t1,t2)))) => // bot in front of us has a reservation.
+                  makeReservation(x,v,t2,ln) match {
+                    case Some(res) => 
+                      bots.put(id,BotInfo(wp,wv,nxt,ln,Some(res)))
+                      myres = res
+                    case None => 
+                  }
+                case None => 
+                  makeReservation(x,v, simulationTime ,ln) match { // XXX could put something here smarter than "simulationTime"
+                    case Some(res) => bots.put(id,BotInfo(wp,wv,nxt,ln,Some(res)))
+                      myres = res
+                    case None => 
+                  }
+                case _ => 
+                  
+              }
+            case Some((t1,t2)) =>
+              myres = (t1,t2)
+          }
+          val (t1,t2) = myres
 
-//        if(! canDoReservation(GATE1,GATE2, t1, t2,   
-//                              x , 
-//                              v, simulationTime )) {
-//          println("can't do that reservation!")
-
- //       }
-
-        if(canDoReservation(GATE1,GATE2, t1, t2,   
-                            0.5f * MAX_A * EPS * EPS + v * EPS + x , 
-                            v + MAX_A * EPS, simulationTime + EPS)) {
-          //accelerate if possible
-          println("we can accelerate")
-          intents.put(id,(None,Some(Accel)))
           
-        } else if(canDoReservation(GATE1,GATE2, t1, t2,   
-                                   v * EPS + x , 
-                                   v , simulationTime + EPS)) {
-          println("we can coast")
-          intents.put(id,(None,None))
-        } else { // otherwise brake
-          println("we should brake")
-          intents.put(id,(None,Some(Brake)))
-//          intents.put(id,(None,Some(Accel)))
+          if(canDoReservation(GATE1,GATE2, t1, t2,   
+                                     v * EPS + x , 
+                                     v , simulationTime + EPS)) {
+            println("we can coast")
+            intents.put(id,(None,None))
+          } else if(canDoReservation(GATE1,GATE2, t1, t2,   
+                                     0.5f * MAX_A * EPS * EPS + v * EPS + x , 
+                                     v + MAX_A * EPS, simulationTime + EPS)) {
+          //accelerate if possible
+            println("we can accelerate")
+            intents.put(id,(None,Some(Accel)))
+          } else { // otherwise brake
+            println("we should brake")
+            intents.put(id,(None,Some(Brake)))
+            //          intents.put(id,(None,Some(Accel)))
+          }
+
+        } else { // this car has passed the intersection
+
+          intents.put(id,(None,Some(Accel)))
         }
 
       }
@@ -220,15 +219,15 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
     nexts2 = dropUntil(nexts2,afterT)
 
     var currentT = afterT
-    var looksok = true
     var nextPlausible = currentT
     while(newres.isEmpty){
       val t1 = currentT
       // calculate t2. be a bit conservative.
-      val myA = (0.8f * MAX_A)
+//      val myA = (0.8f * MAX_A)
+      val dx = GATE1 - x0
       val dt =  (t1 - simulationTime)      
-      val arrivalV = myA * dt + v0 
-      val t2 = t1 +    ( GATE2 - GATE1) / arrivalV
+      val avgV = dx / dt
+      val t2 = t1 +    2f * ( GATE2 - GATE1) / avgV
       if (0.5f * MAX_A * dt * dt + v0 * dt + x0 < GATE1){ 
         currentT += 0.2f
       } else {
@@ -340,12 +339,12 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
     // See if we can avoid getting there too soon.
 
-    if(stoptime < dt1) { // we can stop before our reservation time
+    if(stoptime < dt1) { // we can stop before (in time) the first gate opens
       if( 0.5f * v0 * stoptime > l1) { // we've passed the gate by the time we've stopped
         return false
       }
-    } else { 
-      if (-0.5f * MAX_B * dt1 * dt1 + v0 * dt1 > l1  ) { // we've passed the gate 
+    } else { // we can't stop before the first gate opens
+      if (-0.5f * MAX_B * dt1 * dt1 + v0 * dt1 > l1  ) { // we've passed the gate when it opens
         return false
       }
     }
@@ -381,6 +380,8 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
       val finishX = 0.5f * MAX_A * tbg * tbg + openVel * tbg + l1
 
       println("floor it time = " + floorItTime)
+      println("openVel = " + openVel)
+      println("finishX = " + finishX)
       if (finishX > l2){
         return true
       } else {
