@@ -81,7 +81,9 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
   val INTERSECTION_DISTANCE = 6f;
   val RELEASE_LOCK_DISTANCE = 4f;
 
-//  var intents : SyncMap[BotID, Intent] = it
+  val GATE1 = -4f
+  val GATE2 = 4f
+
   
 
   def act() : Unit = {
@@ -132,28 +134,43 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
       for((id,BotInfo(wp,wv,nxt,ln,r)) <- bots) {
         val x = world2lane(wp,ln)
         val v = world2lane(wv, ln)
+        var myres : Reservation = null
         r match {
           case None => // we need to make a reservation
             bots.get(nxt) match {
               case Some(BotInfo(_,_,_,_,Some((t1,t2)))) => // bot in front of us has a reservation.
                 makeReservation(x,v,t2,ln) match {
-                  case Some(res) => bots.put(id,BotInfo(wp,wv,nxt,ln,Some(res)))
+                  case Some(res) => 
+                    bots.put(id,BotInfo(wp,wv,nxt,ln,Some(res)))
+                    myres = res
                   case None => 
                 }
               case None => 
-                makeReservation(x,v, 0f ,ln) match { // XXX
+                makeReservation(x,v, simulationTime ,ln) match { // XXX could put something here smarter than "simulationTime"
                   case Some(res) => bots.put(id,BotInfo(wp,wv,nxt,ln,Some(res)))
+                    myres = res
                   case None => 
                 }
               case _ => 
                 
             }
           case Some((t1,t2)) =>
+            myres = (t1,t2)
         }
+        val (t1,t2) = myres
+        if(canDoReservation(GATE1,GATE2, t1, t2,   
+                            0.5f * MAX_A * EPS * EPS + v * EPS + x , 
+                            v + MAX_A * EPS, simulationTime + EPS)) {
+          //accelerate if possible
+          intents.put(id,(None,Some(Accel)))
 
-        // see if it's safe to accelerate. if so, do it. else:
-        // see if it's safe to coast. if so, do it. else: 
-        // see if it's safe to brake. if so, do it. else: CATASTROPHE
+        } else if(canDoReservation(GATE1,GATE2, t1, t2,   
+                                   v * EPS + x , 
+                                   v , simulationTime + EPS)) {
+          intents.put(id,(None,None))
+        } else { // otherwise brake
+          intents.put(id,(None,Some(Brake)))
+        }
 
       }
 
@@ -166,8 +183,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
   }
 
-  val GATE1 = -4f
-  val GATE2 = 4f
+
 
 
   val RES_EPS = 0.01f
@@ -195,13 +211,20 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
     var nextPlausible = currentT
     while(newres.isEmpty){
       val t1 = currentT
-      val t2 = t1 + 2.0f // TODO 
-      findConflict(nexts1,nexts2,(t1,t2)) match {
-        case None =>  
-          // XXX need to check that we can actually get there.
-          newres = Some((t1,t2))
-        case Some(tconflict) => 
-          currentT = tconflict + RES_EPS
+      // calculate t2. be a bit conservative.
+      val myA = (0.8f * MAX_A)
+      val dt =  (t1 - simulationTime)      
+      val arrivalV = myA * dt + v0 
+      val t2 = t1 +    ( GATE2 - GATE1) / arrivalV
+      if (0.5f * MAX_A * dt * dt + v0 * dt + x0 < GATE1){ 
+        currentT += 0.2f
+      } else {
+        findConflict(nexts1,nexts2,(t1,t2)) match {
+          case None =>  
+            newres = Some((t1,t2))
+          case Some(tconflict) => 
+            currentT = tconflict + RES_EPS
+        }
       }
     }
     val r = newres.get
