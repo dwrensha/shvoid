@@ -263,7 +263,7 @@ class Physics extends PApplet {
       
 
 
-      dd.drawString(5, 30, "FPS: " + avgFPS , new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(5, 30, "frames per second: " + avgFPS , new Color3f(255.0f,255.0f,255.0f))
       dd.drawString(5, 42, "simulation time: " +  simulationTime, new Color3f(255.0f,255.0f,255.0f))
       
       dd.drawString(5, 54, "spawn delay (adjust with left/right): " +  spawnDelay, new Color3f(255.0f,255.0f,255.0f))
@@ -321,6 +321,7 @@ class Physics extends PApplet {
     override def keyPressed() = {
       if(keyCode == UP) {
            spawnProb *= 1.25
+           if(spawnProb > 1.0f) {spawnProb = 1f}
       } else if(keyCode == DOWN) {
            spawnProb *= 0.8
       } else if(keyCode == LEFT) {

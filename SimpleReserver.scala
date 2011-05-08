@@ -180,42 +180,27 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
           canDoReservation(GATE1,GATE2, t1, t2,   
                            - 0.5f * MAX_B * EPS * EPS + v * EPS + x , 
                            v - MAX_B * EPS, simulationTime + EPS) match {
-            case TooSoon => // catastrophe
+            case TooSoon => // should cancel reservation and brake.
+              intents.put(id,(None,Some(Brake)))
               println("We're going too fast!")
             case TooLate => 
               canDoReservation(GATE1,GATE2, t1, t2,   
                                v * EPS + x , 
                                v , simulationTime + EPS) match {
-                case TooSoon => // XXX
-                  intents.put(id,(None,Some(Accel)))
+                case TooSoon => // XXX This means we can't thread the needle, so to speak
+                  tryToAccel(id,x,v,ln,nxt)
                 case TooLate =>  
-                  intents.put(id,(None,Some(Accel)))
+                  tryToAccel(id,x,v,ln,nxt)
                 case ThatWorks =>  
-                  intents.put(id,(None,None))
+                  tryToCoast(id,x,v,ln,nxt)
               }
             case ThatWorks => 
               intents.put(id,(None,Some(Brake)))
           }
-/*
-          if() {
-            println("we can coast")
-            intents.put(id,(None,None))
-          } else if(canDoReservation(GATE1,GATE2, t1, t2,   
-                                     0.5f * MAX_A * EPS * EPS + v * EPS + x , 
-                                     v + MAX_A * EPS, simulationTime + EPS)) {
-          //accelerate if possible
-            println("we can accelerate")
-            intents.put(id,(None,Some(Accel)))
-          } else { // otherwise brake
-            println("we should brake")
-            intents.put(id,(None,Some(Brake)))
-            //          intents.put(id,(None,Some(Accel)))
-          }
-*/
+
         } else { // this car has passed the intersection
           
-
-          intents.put(id,(None,Some(Accel)))
+            tryToAccel(id,x,v,ln,nxt)
         }
 
       }
@@ -229,6 +214,50 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
   }
 
+  // accelerate, unless that puts us in danger of hitting the next car.
+  def tryToAccel( id: BotID, x: Float, v: Float, ln: Int, nxt : BotID): Unit =  {
+    bots.get(nxt) match {
+      case Some(BotInfo(wp,wv,_,_,_)) =>
+        val nx = world2lane(wp,ln)
+        val nv = world2lane(wv, ln)
+        if (followerCanStop( 0.5f * MAX_A * EPS * EPS + EPS * v + x, 
+                            - 0.5f * MAX_B * EPS * EPS + EPS * nv + nx, 
+                            v + EPS * MAX_A, 
+                            nv - EPS * MAX_B)){
+          intents.put(id,(None,Some(Accel)))
+        } else {
+          intents.put(id,(None,Some(Brake)))
+        }
+      case _ => 
+        intents.put(id,(None,Some(Accel)))
+    }
+  }
+
+  // accelerate, unless that puts us in danger of hitting the next car.
+  def tryToCoast( id: BotID, x: Float, v: Float, ln: Int, nxt : BotID): Unit =  {
+    bots.get(nxt) match {
+      case Some(BotInfo(wp,wv,_,_,_)) =>
+        val nx = world2lane(wp,ln)
+        val nv = world2lane(wv, ln)
+        if (followerCanStop( EPS * v + x, 
+                            - 0.5f * MAX_B * EPS * EPS + EPS * nv + nx, 
+                            v , 
+                            nv - EPS * MAX_B)){
+          intents.put(id,(None,None))
+        } else {
+          intents.put(id,(None,Some(Brake)))
+        }
+      case _ => 
+        intents.put(id,(None,None))
+    }
+  }
+
+
+  // if bots 1 and 2 brake, will the first end behind the second?
+  def followerCanStop(x1: Float,x2: Float,v1: Float,v2: Float) : Boolean = {
+    val buf = 4.0f
+    return buf + x1 + 0.5f * v1 * v1 / MAX_B < x2 + 0.5 * v2 * v2 / MAX_B
+  }
 
 
 
