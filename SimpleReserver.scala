@@ -158,6 +158,9 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
   val GATE1 = -4f
   val GATE2 = 4f
 
+
+  val RES_EPS = 0.01f
+
   // all of this in lane coordinates
   def makeReservation(x0 : Float, v0 : Float, afterT : Float, laneNum : Int) : Option[Reservation] = {
     
@@ -167,21 +170,38 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
     val (ln1,ln2) = lane2tiles(laneNum)
     
-    var prevs1: List[Reservation] = Nil
-    var prevs2: List[Reservation] = Nil
+//    var prevs1: List[Reservation] = Nil
+//    var prevs2: List[Reservation] = Nil
     var nexts1: List[Reservation] = reservations(ln1)
     var nexts2: List[Reservation] = reservations(ln2)
     var newres : Option[Reservation] = None
-    while((! nexts1.isEmpty) && 
-          nexts1.head._2 < afterT){
-      prevs1 = nexts1.head :: prevs1
-      nexts1 = nexts1.tail
-    }
 
-    while((! nexts2.isEmpty) && 
-          nexts2.head._2 < afterT){
-      prevs2 = nexts2.head :: prevs1
-      nexts2 = nexts2.tail
+    nexts1 = dropUntil(nexts1,afterT)
+    nexts2 = dropUntil(nexts2,afterT)
+
+    var currentT = afterT
+    var looksok = true
+    var nextPlausible = currentT
+    while(newres.isEmpty){
+      if( (! nexts1.isEmpty) &&
+          nexts1.head._1 <= currentT &&
+          nexts1.head._2 >= currentT 
+       ) {
+        looksok = false
+        nextPlausible = nexts1.head._2 + RES_EPS
+      }
+
+      if( (! nexts2.isEmpty) &&
+          nexts2.head._1 <= currentT &&
+          nexts2.head._2 >= currentT 
+       ) {
+        looksok = false
+        nextPlausible = scala.math.max(nexts1.head._2 + RES_EPS, nextPlausible)
+      }
+
+      
+
+
     }
 
       newres = Some((1f,2f))
@@ -192,10 +212,66 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
     /*  Find an open slot after afterT that we can get to.
      *
   */
-    
+
 
     return None
 
+  }
+
+  // return None if this works, otherwise, give a new starting time to try.
+  def findConflict(lst1 : List[Reservation], lst2: List[Reservation], r: Reservation) : Option[Float] = {
+    val (t1,t2) = r
+
+    val lst11 = dropUntil(lst1, t1)
+    val lst21 = dropUntil(lst2, t1)
+
+    (lst11,lst21) match {
+      case ((l1t1,l1t2)::_, (l2t1,l2t2)::_ ) => 
+       if( l1t1 <= t2 ) {
+          return Some(l1t2)
+        } else if( l1t1 <= t2 ) {
+          return Some(l1t2)
+        } else {
+          return None
+        }
+      case (Nil, (l2t1,l2t2)::_)  => // we know that l2t2 >= t1
+       if((l2t1) <= t2) {
+         return Some(l2t2)
+       } else {return None}
+      case ((l1t1,l1t2)::_,Nil) => // we know that l1t2 >= t1
+       if((l1t1) <= t2) {
+         return Some(l1t2)
+       } else {return None}
+      case _ => 
+        return None
+    }
+    
+    
+  }
+
+  // drop all reservations that cannot possibly
+  // conflict with one that starts at time v
+  def dropUntil(lst: List[(Reservation)], v: Float) : List[Reservation] = {
+    var nexts = lst
+    var prevs: List[Reservation] = Nil
+    while((! nexts.isEmpty) && 
+          nexts.head._2 < v){
+      prevs = nexts.head :: prevs
+      nexts = nexts.tail
+    }
+    nexts
+  }
+
+
+  def shiftUntil(racc: List[(Reservation)], lst: List[(Reservation)], v: Float) : ( List[Reservation], List[Reservation]  ) = {
+    var nexts = lst
+    var prevs: List[Reservation] = Nil
+    while((! nexts.isEmpty) && 
+          nexts.head._2 < v){
+      prevs = nexts.head :: prevs
+      nexts = nexts.tail
+    }
+    (prevs,nexts)
   }
   
   
