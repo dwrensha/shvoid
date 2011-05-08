@@ -132,6 +132,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
       // Each car makes a decision about what to do.
 
       for((id,BotInfo(wp,wv,nxt,ln,r)) <- bots) {
+        println("on car: " + id)
         val x = world2lane(wp,ln)
         val v = world2lane(wv, ln)
         var myres : Reservation = null
@@ -158,18 +159,30 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
             myres = (t1,t2)
         }
         val (t1,t2) = myres
+
+//        if(! canDoReservation(GATE1,GATE2, t1, t2,   
+//                              x , 
+//                              v, simulationTime )) {
+//          println("can't do that reservation!")
+
+ //       }
+
         if(canDoReservation(GATE1,GATE2, t1, t2,   
                             0.5f * MAX_A * EPS * EPS + v * EPS + x , 
                             v + MAX_A * EPS, simulationTime + EPS)) {
           //accelerate if possible
+          println("we can accelerate")
           intents.put(id,(None,Some(Accel)))
-
+          
         } else if(canDoReservation(GATE1,GATE2, t1, t2,   
                                    v * EPS + x , 
                                    v , simulationTime + EPS)) {
+          println("we can coast")
           intents.put(id,(None,None))
         } else { // otherwise brake
+          println("we should brake")
           intents.put(id,(None,Some(Brake)))
+//          intents.put(id,(None,Some(Accel)))
         }
 
       }
@@ -235,6 +248,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
 
 
+    println("reservation made: " + r)
     return Some(r)
 
   }
@@ -316,10 +330,17 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
     val dt2 = rt2 - t0
     val stoptime = v0 / MAX_B
 
+    println("canDoReservation: " + rx1 + "," + rx2 + "," + rt1 + "," + rt2 + "," + x0 + "," + v0 + "," + t0)
+    println("l1 = " + l1)
+    println("l2 = " + l2)
+    println("dt1 = " + dt1)
+    println("dt2 = " + dt2)
+    println("stoptime = " + stoptime)
+    println("MAX_A = " + MAX_A)
 
     // See if we can avoid getting there too soon.
 
-    if(stoptime < rt1) { // we can stop before our reservation time
+    if(stoptime < dt1) { // we can stop before our reservation time
       if( 0.5f * v0 * stoptime > l1) { // we've passed the gate by the time we've stopped
         return false
       }
@@ -328,6 +349,8 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
         return false
       }
     }
+
+    println("we can avoid getting there too soon")
 
     // See if we even need to worry about the first gate
 
@@ -341,15 +364,23 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
       
     } 
 
+    println("we do have to worry about the first gate")
+
     // ok, we can avoid getting there too soon. can we cross the second gate before it closes?
     val remainingtime = dt1 - stoptime
+
+    println("remainingtime = " + remainingtime)
     val tbg = dt2-dt1 // time between gates
 
     if (0.5f * (v0 * stoptime + remainingtime * remainingtime * MAX_A )  < l1 ){ //If we stop, we're not there for the gate's opening
-      val floorItTime = (dt1 * ( MAX_A + MAX_B) + scala.math.sqrt( square(dt1 * (MAX_A + MAX_B) ) - (MAX_A + MAX_B) *(MAX_A * dt1*dt1 + v0*dt1 - l1)    )   )   / (MAX_A + MAX_B)
-      val openVel = v0 - MAX_B *  floorItTime +  MAX_A * (rt1 - floorItTime)
+      println("we could stop before the gate opens")
+      // this is a time relative to t0
+      val floorItTime = (dt1 * ( MAX_A + MAX_B) - scala.math.sqrt( square(dt1 * (MAX_A + MAX_B) ) - (MAX_A + MAX_B) *(MAX_A * dt1*dt1 + v0*dt1 - l1)    )   )   / (MAX_A + MAX_B)
+      val openVel = v0 - MAX_B *  floorItTime +  MAX_A * (dt1 - floorItTime)
 
       val finishX = 0.5f * MAX_A * tbg * tbg + openVel * tbg + l1
+
+      println("floor it time = " + floorItTime)
       if (finishX > l2){
         return true
       } else {

@@ -160,11 +160,12 @@ class Physics extends PApplet {
 
         // add some stuff to the world.
 
+/*
         makeBot(new Vec2(0.0f,0.0f),
                 new Vec2(0.0f, 0.0f), 
                 (new Vec2(80.0f, 0.0f), 5.0f),
                 0.0f, 0.0f)
-
+*/
 
 
       makeObstacle(new Vec2(-102.0f,-102.0f), 98.0f)
@@ -256,6 +257,7 @@ class Physics extends PApplet {
 
 
       dd.drawString(5, 30, "FPS: " + avgFPS ,new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(5, 40, "simulation time: " +  simulationTime,new Color3f(255.0f,255.0f,255.0f))
       return
     }
     
