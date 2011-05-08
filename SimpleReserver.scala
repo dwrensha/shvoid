@@ -99,6 +99,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
     while(true) {
 
+
       // get everything from a single step
       receivemore = true
       while(receivemore){
@@ -133,7 +134,10 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
         }
       }
 
-
+      for(i <- reservations.indices) {
+        val rs = dropUntil(reservations(i), simulationTime)
+        reservations.update(i,rs)
+      }
 
       // Each car makes a decision about what to do.
 
@@ -174,19 +178,25 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
           
           canDoReservation(GATE1,GATE2, t1, t2,   
-                           0.5f * MAX_A * EPS * EPS + v * EPS + x , 
-                           v + MAX_A * EPS, simulationTime + EPS) match {
-            case TooSoon => 
-              intents.put(id,(None,Some(Brake)))
+                           - 0.5f * MAX_B * EPS * EPS + v * EPS + x , 
+                           v - MAX_B * EPS, simulationTime + EPS) match {
+            case TooSoon => // catastrophe
             case TooLate => 
-              intents.put(id,(None,Some(Accel)))
+              canDoReservation(GATE1,GATE2, t1, t2,   
+                               v * EPS + x , 
+                               v , simulationTime + EPS) match {
+                case TooSoon => // XXX
+                  intents.put(id,(None,Some(Accel)))
+                case TooLate =>  
+                  intents.put(id,(None,Some(Accel)))
+                case ThatWorks =>  
+                  intents.put(id,(None,None))
+              }
             case ThatWorks => 
-              intents.put(id,(None,Some(Accel)))
+              intents.put(id,(None,Some(Brake)))
           }
 /*
-          if(canDoReservation(GATE1,GATE2, t1, t2,   
-                                     v * EPS + x , 
-                                     v , simulationTime + EPS)) {
+          if() {
             println("we can coast")
             intents.put(id,(None,None))
           } else if(canDoReservation(GATE1,GATE2, t1, t2,   
@@ -250,7 +260,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
       val dx = GATE1 - x0
       val dt =  (t1 - simulationTime)      
       val avgV = dx / dt
-      val t2 = t1 +    2f * ( GATE2 - GATE1) / avgV
+      val t2 = t1 +    2f * ( GATE2 - GATE1) / (avgV)
       if (0.5f * MAX_A * dt * dt + v0 * dt + x0 < GATE1){ 
         currentT += 0.2f
       } else {
