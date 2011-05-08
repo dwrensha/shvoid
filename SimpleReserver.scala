@@ -44,6 +44,12 @@ import Lanes._
   */ 
 
 
+sealed abstract class ReservationStatus
+case object TooSoon extends ReservationStatus
+case object TooLate extends ReservationStatus
+case object ThatWorks extends ReservationStatus
+
+
 class SimpleReserverController(intents: SyncMap[BotID, Intent], 
                                MAX_A : Float, 
                                MAX_B : Float,
@@ -167,6 +173,17 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
           val (t1,t2) = myres
 
           
+          canDoReservation(GATE1,GATE2, t1, t2,   
+                           0.5f * MAX_A * EPS * EPS + v * EPS + x , 
+                           v + MAX_A * EPS, simulationTime + EPS) match {
+            case TooSoon => 
+              intents.put(id,(None,Some(Brake)))
+            case TooLate => 
+              intents.put(id,(None,Some(Accel)))
+            case ThatWorks => 
+              intents.put(id,(None,Some(Accel)))
+          }
+/*
           if(canDoReservation(GATE1,GATE2, t1, t2,   
                                      v * EPS + x , 
                                      v , simulationTime + EPS)) {
@@ -183,7 +200,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
             intents.put(id,(None,Some(Brake)))
             //          intents.put(id,(None,Some(Accel)))
           }
-
+*/
         } else { // this car has passed the intersection
           
 
@@ -328,7 +345,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
   
   def square(x: Float): Float = {x * x}
 
-  def canDoReservation(rx1:Float,rx2:Float,rt1:Float,rt2:Float,x0:Float,v0:Float, t0:Float) : Boolean = {
+  def canDoReservation(rx1:Float,rx2:Float,rt1:Float,rt2:Float,x0:Float,v0:Float, t0:Float) : ReservationStatus = {
     val l1 = rx1 - x0
     val l2 = rx2 - x0
     val dt1 = rt1 - t0
@@ -347,11 +364,11 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
     if(stoptime < dt1) { // we can stop before (in time) the first gate opens
       if( 0.5f * v0 * stoptime > l1) { // we've passed the gate by the time we've stopped
-        return false
+        return TooSoon
       }
     } else { // we can't stop before the first gate opens
       if (-0.5f * MAX_B * dt1 * dt1 + v0 * dt1 > l1  ) { // we've passed the gate when it opens
-        return false
+        return TooSoon
       }
     }
 
@@ -364,10 +381,10 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
       // so we might as well floor it.
       if(0.5f * MAX_A * dt2 * dt2 + v0 * dt1 >= l2) {
-        return true
+        return ThatWorks
       } else {
         println("we can't even make it then!")
-        return false
+        return TooLate
       }
       
     } 
@@ -392,9 +409,9 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
       println("openVel = " + openVel)
       println("finishX = " + finishX)
       if (finishX > l2){
-        return true
+        return ThatWorks
       } else {
-        return false
+        return TooLate
       }
     } else { // strategy: stop, then accelerate at the last possible instant to get there in time for gate's opening.
       val remainingX = l1 - stoptime * v0
@@ -403,9 +420,9 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
       
       val finishX = 0.5f * MAX_A * tbg * tbg + openVel * tbg + l1
       if (finishX > l2){
-        return true
+        return ThatWorks
       } else {
-        return false
+        return TooLate
       }
 
     }
