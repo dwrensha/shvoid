@@ -17,6 +17,7 @@ object Lanes {
   */
    val LANE_OFFSET = 1.5f
    val LANE_START = 95f
+   val LANE_END = 90f
 
     val spawnpoints = 
       Array(new Vec2(LANE_OFFSET,-LANE_START),
@@ -30,6 +31,18 @@ object Lanes {
             new Vec2(0f,-5f),
             new Vec2(-5f,0f))
 
+    val spawnchecks = 
+      Array(new Vec2(0f,1f),
+            new Vec2(1f,0f),
+            new Vec2(0f,1f),
+            new Vec2(1f,0f))
+
+    val spawnbacksteps = 
+      Array(new Vec2(0f,-4f),
+            new Vec2(-4f,0f),
+            new Vec2(0f,4f),
+            new Vec2(4f,0f))
+
     val spawnangles = 
       Array(pi / 2.0f,
             0f,
@@ -38,10 +51,10 @@ object Lanes {
       )
 
     val goals = 
-      Array((new Vec2(LANE_OFFSET,LANE_START), 5.0f),
-            (new Vec2(LANE_START,-LANE_OFFSET), 5f),
-            (new Vec2(-LANE_OFFSET,-LANE_START), 5f),
-            (new Vec2(-LANE_START,LANE_OFFSET), 5f))
+      Array((new Vec2(LANE_OFFSET,LANE_END), 5.0f),
+            (new Vec2(LANE_END,-LANE_OFFSET), 5f),
+            (new Vec2(-LANE_OFFSET,-LANE_END), 5f),
+            (new Vec2(-LANE_END,LANE_OFFSET), 5f))
 
 
   /****2 ****

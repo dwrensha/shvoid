@@ -266,8 +266,8 @@ class Physics extends PApplet {
       dd.drawString(5, 30, "FPS: " + avgFPS , new Color3f(255.0f,255.0f,255.0f))
       dd.drawString(5, 42, "simulation time: " +  simulationTime, new Color3f(255.0f,255.0f,255.0f))
       
-      dd.drawString(5, 54, "spawn delay: " +  spawnDelay, new Color3f(255.0f,255.0f,255.0f))
-      dd.drawString(5, 66, "spawn probability (per frame): " +  spawnProb, new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(5, 54, "spawn delay (adjust with left/right): " +  spawnDelay, new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(5, 66, "spawn prob. (adjust with up/down): " +  spawnProb, new Color3f(255.0f,255.0f,255.0f))
 
       return
     }
@@ -291,14 +291,18 @@ class Physics extends PApplet {
           ticks.update(i,ticks(i) - 1)
         } else { 
           if(rand.nextDouble < spawnProb ){
-            val spawn = spawnpoints(i)
+            var spawn = spawnpoints(i)
             val v = spawnvels(i)
             val angle = spawnangles(i)
             val gl = goals(i)
             val omega = 0f;
-            val id = makeBot(spawn, v, gl, angle, omega )
-            controller ! (('BotSpawn, id, spawn, v, angle, omega, i ))
-            ticks.update(i,spawnDelay)
+            val checkdiag = spawnchecks(i).mul(4f)
+            if( world.query(new AABB(spawn.sub(checkdiag), spawn.add(checkdiag)), 1).isEmpty) {
+//              spawn = spawn.add(spawnbacksteps(i))
+              val id = makeBot(spawn, v, gl, angle, omega )
+              controller ! (('BotSpawn, id, spawn, v, angle, omega, i ))
+              ticks.update(i,spawnDelay)
+            }
           }
         }
       }
