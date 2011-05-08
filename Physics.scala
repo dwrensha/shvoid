@@ -37,6 +37,10 @@ class Physics extends PApplet {
     var avgFPS = 0.0
     val numFrames = 100
     var frameNum = 0
+
+    var spawnProb :  Double = 0.01
+    var spawnDelay : Int = 120
+
     var startTime : Long = System.currentTimeMillis()
 
     var simulationTime: Float = 0f
@@ -257,14 +261,16 @@ class Physics extends PApplet {
       
 
 
-      dd.drawString(5, 30, "FPS: " + avgFPS ,new Color3f(255.0f,255.0f,255.0f))
-      dd.drawString(5, 40, "simulation time: " +  simulationTime,new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(5, 30, "FPS: " + avgFPS , new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(5, 42, "simulation time: " +  simulationTime, new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(5, 54, "spawn delay: " +  spawnDelay, new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(5, 66, "spawn probability (per frame): " +  spawnProb, new Color3f(255.0f,255.0f,255.0f))
       return
     }
     
-   val spawndelay = 120
 
-   val ticks = Array(spawndelay, spawndelay, spawndelay, spawndelay)
+
+   val ticks = Array(spawnDelay, spawnDelay, spawnDelay, spawnDelay)
 
 
           
@@ -280,7 +286,7 @@ class Physics extends PApplet {
         if(ticks(i) > 0 ) {
           ticks.update(i,ticks(i) - 1)
         } else { 
-          if(rand.nextDouble < 0.01){
+          if(rand.nextDouble < spawnProb ){
             val spawn = spawnpoints(i)
             val v = spawnvels(i)
             val angle = spawnangles(i)
@@ -288,7 +294,7 @@ class Physics extends PApplet {
             val omega = 0f;
             val id = makeBot(spawn, v, gl, angle, omega )
             controller ! (('BotSpawn, id, spawn, v, angle, omega, i ))
-            ticks.update(i,spawndelay)
+            ticks.update(i,spawnDelay)
           }
         }
       }
@@ -301,17 +307,15 @@ class Physics extends PApplet {
 
 
 
-
-
     /*
      * Do I have to worry about thread safety here?
   */ 
     override def keyPressed(e: java.awt.event.KeyEvent) = {
       var (t,a) = intents.getOrElse(0,(None,None))
       if(keyCode == UP) {
-           a = Some(Accel)
+           spawnProb *= 1.25
       } else if(keyCode == DOWN) {
-           a = Some(Brake)
+           spawnProb *= 0.8
       } else {
         a = None
       }
@@ -325,7 +329,6 @@ class Physics extends PApplet {
       }
 
 
-      intents.put(0,(t,a))
 
     }
 
