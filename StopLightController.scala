@@ -7,7 +7,7 @@ import org.jbox2d.common.Vec2
 
 import Types._
 
-class Controller(intents: SyncMap[BotID, Intent], 
+class StopLightController(intents: SyncMap[BotID, Intent], 
                  MAX_A : Float, 
                  MAX_B : Float,
                  EPS : Float) extends Actor {

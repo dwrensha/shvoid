@@ -32,6 +32,17 @@ class StopSign extends Physics {
   }
 }
 
+class StopLight extends Physics {
+  override def setup() {
+    println("in stoplight")
+    controller = new StopLightController(intents, 
+                                         MAXFORCE / BOTMASS, 
+                                         MAXBRAKE / BOTMASS,
+                                         EPS)
+   super.setup()
+  }
+}
+
 
 class SimpleReserver extends Physics {
   override def setup() {

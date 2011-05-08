@@ -16,7 +16,7 @@ object Lanes {
    **** 0****
   */
    val LANE_OFFSET = 1.5f
-   val LANE_START = 100f
+   val LANE_START = 95f
 
     val spawnpoints = 
       Array(new Vec2(LANE_OFFSET,-LANE_START),
