@@ -53,6 +53,17 @@ class SimpleReserver extends Physics {
                                               EPS)
    super.setup()
   }
+}
+
+class AdvancedReserver extends Physics {
+  override def setup() {
+    println("in advancedreserver")
+    controller = new AdvancedReserverController(intents, 
+                                              MAXFORCE / BOTMASS, 
+                                              MAXBRAKE / BOTMASS,
+                                              EPS)
+   super.setup()
+  }
 
 
 }

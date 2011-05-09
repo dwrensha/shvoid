@@ -45,15 +45,15 @@ import Lanes._
 
 
 
-
-class SimpleReserverController(intents: SyncMap[BotID, Intent], 
-                               MAX_A : Float, 
-                               MAX_B : Float,
-                               EPS : Float) extends Actor {
+class AdvancedReserverController(intents: SyncMap[BotID, Intent], 
+                                 MAX_A : Float, 
+                                 MAX_B : Float,
+                                 EPS : Float) extends Actor {
 
   type Time = Float
   type Reservation = (Time,Time) // Start time and end time
 
+    
     sealed abstract class ReservationStatus
   case object TooSoon extends ReservationStatus
   case object TooLate extends ReservationStatus
@@ -180,24 +180,26 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
 
           
           canDoReservation(GATE1,GATE2, t1, t2,   
-                           - 0.5f * MAX_B * EPS * EPS + v * EPS + x , 
-                           v - MAX_B * EPS, simulationTime + EPS) match {
+                           0.5f * MAX_A * EPS * EPS + v * EPS + x , 
+                           v + MAX_A * EPS, simulationTime + EPS) match {
             case TooSoon => // should cancel reservation and brake.
-              intents.put(id,(None,Some(Brake)))
-              println("We're going too fast!")
-            case TooLate => 
               canDoReservation(GATE1,GATE2, t1, t2,   
                                v * EPS + x , 
                                v , simulationTime + EPS) match {
-                case TooSoon => // XXX This means we can't thread the needle, so to speak
-                  tryToAccel(id,x,v,ln,nxt)
-                case TooLate =>  
+                case TooSoon => 
+                  intents.put(id,(None,Some(Brake)))
+                case TooLate => // XXX This means we can't thread the needle, so to speak
                   tryToAccel(id,x,v,ln,nxt)
                 case ThatWorks =>  
                   tryToCoast(id,x,v,ln,nxt)
               }
-            case ThatWorks => 
+            case TooLate => // should cancel reservation and brake.
               intents.put(id,(None,Some(Brake)))
+              println("We can't get there in time!")
+
+            case ThatWorks => 
+              tryToAccel(id,x,v,ln,nxt)
+
           }
 
         } else { // this car has passed the intersection

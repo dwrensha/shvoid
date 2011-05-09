@@ -1,6 +1,6 @@
 JARS = core.jar:jbox2d.jar
 JAVAFILES = ProcessingDebugDraw.java Visualizer.java
-SCALAFILES = Types.scala Physics.scala Main.scala Controller.scala StopSignController.scala StopLightController.scala SimpleReserver.scala Wrappers.scala Lanes.scala
+SCALAFILES = Types.scala Physics.scala Main.scala Controller.scala StopSignController.scala StopLightController.scala SimpleReserver.scala AdvancedReserver.scala Wrappers.scala Lanes.scala
 
 SCALAFLAGS = -deprecation
 
