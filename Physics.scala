@@ -268,9 +268,9 @@ class Physics extends PApplet {
       
       dd.drawString(5, 54, "spawn delay (adjust with left/right): " +  spawnDelay, new Color3f(255.0f,255.0f,255.0f))
       dd.drawString(420, 560, "spawn prob. 0 (adjust with v/b): " +  spawnProbs(0), new Color3f(255.0f,255.0f,255.0f))
-      dd.drawString(30, 330, "spawn prob. 1 (adjust with a/s): " +  spawnProbs(1), new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(25, 330, "spawn prob. 1 (adjust with a/s): " +  spawnProbs(1), new Color3f(255.0f,255.0f,255.0f))
       dd.drawString(420, 40, "spawn prob. 2 (adjust with t/y): " +  spawnProbs(2), new Color3f(255.0f,255.0f,255.0f))
-      dd.drawString(520, 270, "spawn prob. 3 (adjust with k/l): " +  spawnProbs(3), new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(510, 278, "spawn prob. 3 (adjust with k/l): " +  spawnProbs(3), new Color3f(255.0f,255.0f,255.0f))
 
       return
     }
@@ -299,7 +299,7 @@ class Physics extends PApplet {
             val angle = spawnangles(i)
             val gl = goals(i)
             val omega = 0f;
-            val checkdiag = spawnchecks(i).mul(5.5f)
+            val checkdiag = spawnchecks(i).mul(6.0f)
             if( world.query(new AABB(spawn.sub(checkdiag), spawn.add(checkdiag)), 1).isEmpty) {
 //              spawn = spawn.add(spawnbacksteps(i))
               val id = makeBot(spawn, v, gl, angle, omega )
@@ -322,30 +322,30 @@ class Physics extends PApplet {
      * Do I have to worry about thread safety here?
   */ 
     override def keyPressed() = {
-      if(key == 'b') {
+      if(key == 'v') {
            spawnProbs(0) *= 1.25
            if(spawnProbs(0) > 1.0) {spawnProbs(0) = 1d}
-      } else if(key == 'v') {
+      } else if(key == 'b') {
            spawnProbs(0) *= 0.8
-      } else if(key == 's') {
+      } else if(key == 'a') {
            spawnProbs(1) *= 1.25
            if(spawnProbs(1) > 1.0) {spawnProbs(1) = 1d}
-      } else if(key == 'a') {
+      } else if(key == 's') {
            spawnProbs(1) *= 0.8
-      } else if(key == 'y') {
+      } else if(key == 't') {
            spawnProbs(2) *= 1.25
            if(spawnProbs(2) > 1.0) {spawnProbs(2) = 1d}
-      } else if(key == 't') {
+      } else if(key == 'y') {
            spawnProbs(2) *= 0.8
-      } else if(key == 'l') {
+      } else if(key == 'k') {
            spawnProbs(3) *= 1.25
            if(spawnProbs(3) > 1.0) {spawnProbs(3) = 1d}
-      } else if(key == 'k') {
+      } else if(key == 'l') {
            spawnProbs(3) *= 0.8
-      } else if(keyCode == LEFT) {
+      } else if(keyCode == RIGHT) {
            spawnDelay -= 5
            if(spawnDelay < 0) {spawnDelay = 0}
-      }  else if(keyCode == RIGHT) {
+      }  else if(keyCode == LEFT) {
            spawnDelay += 5
       }  
 
