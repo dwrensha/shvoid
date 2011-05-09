@@ -289,7 +289,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
       val t1 = currentT
       // calculate t2. be a bit conservative.
       // assume that I accelerate for most of the distance.  Vi^2 + 2ax = Vf^2
-      val myA = (0.8f * MAX_A)
+      val myA = (0.9f * MAX_A)
       val dx = GATE1 - x0
       val arriveV = scala.math.sqrt(2f * myA * dx + v0 * v0).asInstanceOf[Float]
       val dt =  (t1 - simulationTime)      

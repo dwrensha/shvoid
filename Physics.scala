@@ -38,6 +38,8 @@ class Physics extends PApplet {
     val numFrames = 100
     var frameNum = 0
 
+    var numBotsDone = 0
+
     val spawnProbs :  Array[Double] = Array(0.01, 0.01, 0.01, 0.01)
     var spawnDelay : Int = 20
 
@@ -196,15 +198,17 @@ class Physics extends PApplet {
         perhapsCreateBots()
 
         var toRemove: List[BotID] = Nil
+        println("TIMESTEP " + simulationTime + " " + numBotsDone)
 
         for((id,botinfo) <- livebots ){
           val intent = intents.getOrElse(id,null)
           val b = botinfo.body
           val gl@(glv, glr) = botinfo.goal
           val p = b.getPosition()
-          if(glv.sub(p).length() < glr){
+          if(glv.sub(p).length() < glr){ // reached goal!
             controller ! (('BotDone, id ))
             val st = botinfo.starttime
+            numBotsDone += 1
             toRemove = id :: toRemove
             donebots.put(id, new DoneBotInfo(gl, 
                                              st,
@@ -265,8 +269,10 @@ class Physics extends PApplet {
 
       dd.drawString(5, 30, "frames per second: " + avgFPS , new Color3f(255.0f,255.0f,255.0f))
       dd.drawString(5, 42, "simulation time: " +  simulationTime, new Color3f(255.0f,255.0f,255.0f))
-      
       dd.drawString(5, 54, "spawn delay (adjust with left/right): " +  spawnDelay, new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(5, 66, "goals reached: " + numBotsDone, new Color3f(255.0f,255.0f,255.0f))
+
+
       dd.drawString(420, 560, "spawn prob. 0 (adjust with v/b): " +  spawnProbs(0), new Color3f(255.0f,255.0f,255.0f))
       dd.drawString(25, 330, "spawn prob. 1 (adjust with a/s): " +  spawnProbs(1), new Color3f(255.0f,255.0f,255.0f))
       dd.drawString(420, 40, "spawn prob. 2 (adjust with t/y): " +  spawnProbs(2), new Color3f(255.0f,255.0f,255.0f))
@@ -342,6 +348,8 @@ class Physics extends PApplet {
            if(spawnProbs(3) > 1.0) {spawnProbs(3) = 1d}
       } else if(key == 'l') {
            spawnProbs(3) *= 0.8
+      } else if(key == '1') {
+           for(i<- spawnProbs.indices) {spawnProbs(i) = 1}
       } else if(keyCode == RIGHT) {
            spawnDelay -= 5
            if(spawnDelay < 0) {spawnDelay = 0}
