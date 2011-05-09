@@ -38,7 +38,7 @@ class Physics extends PApplet {
     val numFrames = 100
     var frameNum = 0
 
-    var spawnProb :  Double = 0.01
+    val spawnProbs :  Array[Double] = Array(0.01, 0.01, 0.01, 0.01)
     var spawnDelay : Int = 20
 
     var startTime : Long = System.currentTimeMillis()
@@ -267,7 +267,10 @@ class Physics extends PApplet {
       dd.drawString(5, 42, "simulation time: " +  simulationTime, new Color3f(255.0f,255.0f,255.0f))
       
       dd.drawString(5, 54, "spawn delay (adjust with left/right): " +  spawnDelay, new Color3f(255.0f,255.0f,255.0f))
-      dd.drawString(5, 66, "spawn prob. (adjust with up/down): " +  spawnProb, new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(420, 560, "spawn prob. 0 (adjust with v/b): " +  spawnProbs(0), new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(30, 330, "spawn prob. 1 (adjust with a/s): " +  spawnProbs(1), new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(420, 40, "spawn prob. 2 (adjust with t/y): " +  spawnProbs(2), new Color3f(255.0f,255.0f,255.0f))
+      dd.drawString(520, 270, "spawn prob. 3 (adjust with k/l): " +  spawnProbs(3), new Color3f(255.0f,255.0f,255.0f))
 
       return
     }
@@ -290,7 +293,7 @@ class Physics extends PApplet {
         if(ticks(i) > 0 ) {
           ticks.update(i,ticks(i) - 1)
         } else { 
-          if(rand.nextDouble < spawnProb ){
+          if(rand.nextDouble < spawnProbs(i) ){
             var spawn = spawnpoints(i)
             val v = spawnvels(i)
             val angle = spawnangles(i)
@@ -319,11 +322,26 @@ class Physics extends PApplet {
      * Do I have to worry about thread safety here?
   */ 
     override def keyPressed() = {
-      if(keyCode == UP) {
-           spawnProb *= 1.25
-           if(spawnProb > 1.0f) {spawnProb = 1f}
-      } else if(keyCode == DOWN) {
-           spawnProb *= 0.8
+      if(key == 'b') {
+           spawnProbs(0) *= 1.25
+           if(spawnProbs(0) > 1.0) {spawnProbs(0) = 1d}
+      } else if(key == 'v') {
+           spawnProbs(0) *= 0.8
+      } else if(key == 's') {
+           spawnProbs(1) *= 1.25
+           if(spawnProbs(1) > 1.0) {spawnProbs(1) = 1d}
+      } else if(key == 'a') {
+           spawnProbs(1) *= 0.8
+      } else if(key == 'y') {
+           spawnProbs(2) *= 1.25
+           if(spawnProbs(2) > 1.0) {spawnProbs(2) = 1d}
+      } else if(key == 't') {
+           spawnProbs(2) *= 0.8
+      } else if(key == 'l') {
+           spawnProbs(3) *= 1.25
+           if(spawnProbs(3) > 1.0) {spawnProbs(3) = 1d}
+      } else if(key == 'k') {
+           spawnProbs(3) *= 0.8
       } else if(keyCode == LEFT) {
            spawnDelay -= 5
            if(spawnDelay < 0) {spawnDelay = 0}
