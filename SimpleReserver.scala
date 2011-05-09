@@ -256,7 +256,7 @@ class SimpleReserverController(intents: SyncMap[BotID, Intent],
   // if bots 1 and 2 brake, will the first end behind the second?
   def followerCanStop(x1: Float,x2: Float,v1: Float,v2: Float) : Boolean = {
     val buf = 4.0f
-    return buf + x1 + 0.5f * v1 * v1 / MAX_B < x2 + 0.5 * v2 * v2 / MAX_B
+    return buf + x1 + 0.5f * v1 * v1 / MAX_B < x2 + 0.5f * v2 * v2 / MAX_B
   }
 
 

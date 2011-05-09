@@ -39,7 +39,7 @@ class Physics extends PApplet {
     var frameNum = 0
 
     var spawnProb :  Double = 0.01
-    var spawnDelay : Int = 120
+    var spawnDelay : Int = 20
 
     var startTime : Long = System.currentTimeMillis()
 
@@ -296,7 +296,7 @@ class Physics extends PApplet {
             val angle = spawnangles(i)
             val gl = goals(i)
             val omega = 0f;
-            val checkdiag = spawnchecks(i).mul(4f)
+            val checkdiag = spawnchecks(i).mul(5.5f)
             if( world.query(new AABB(spawn.sub(checkdiag), spawn.add(checkdiag)), 1).isEmpty) {
 //              spawn = spawn.add(spawnbacksteps(i))
               val id = makeBot(spawn, v, gl, angle, omega )
@@ -326,6 +326,7 @@ class Physics extends PApplet {
            spawnProb *= 0.8
       } else if(keyCode == LEFT) {
            spawnDelay -= 5
+           if(spawnDelay < 0) {spawnDelay = 0}
       }  else if(keyCode == RIGHT) {
            spawnDelay += 5
       }  
