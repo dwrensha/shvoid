@@ -3,6 +3,15 @@ the SHVOID simulation engine for automated control of 2d moving things.
 developed with Scala 2.8.0
 
 
+to build, type "make"
+
+to run, type, e.g.
+> ./run.sh StopSign
+
+
+
+
+
 
 Copyright (c) 2011, David Renshaw 
 
